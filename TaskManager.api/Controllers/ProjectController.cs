@@ -31,21 +31,31 @@ namespace TaskManager.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<List<ProjectModel>> Get()=>
-            await _db.Projects.Select(x => x.ToDto()).ToListAsync();
+        [Authorize(Roles = "Admin")]
+        public async Task<IEnumerable<ProjectModel>> Get() =>
+            await _projectsServices.GetAll();
 
+        [HttpGet("{id}")]
+        public IActionResult Get(int id)
+        {
+            var projectModel = _projectsServices.Get(id);
+            return projectModel is null? NoContent() : Ok(projectModel);
+
+        }
         [HttpPost]
+        [Authorize(Roles = $"Admin,Editor")]
         public IActionResult Create([FromBody] ProjectModel projectModel)
         {
             if (projectModel == null)
             {
                 return BadRequest();
             }
-            var user = _usersServices.GetUser(HttpContext.User.Identity.Name)
+            var user = _usersServices.GetUser(HttpContext.User.Identity.Name);
               return _projectsServices.Create(projectModel)?Ok(): NotFound();
         }
 
         [HttpPatch("id")]
+        [Authorize(Roles = $"Admin,Editor")]
         public IActionResult Update(int id, [FromBody] ProjectModel projectModel)
         {
             if (projectModel == null)
@@ -56,6 +66,7 @@ namespace TaskManager.Api.Controllers
         }
 
         [HttpDelete("id")]
+        [Authorize(Roles = $"Admin,Editor")]
         public IActionResult Delete(int id)
         {
            return _projectsServices.Delete(id) ? Ok() : NotFound();

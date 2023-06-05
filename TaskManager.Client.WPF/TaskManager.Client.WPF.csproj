@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Resources\Style\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Prism.DryIoc" Version="8.1.97" />
+    <PackageReference Include="Prism.Wpf" Version="8.1.97" />
+    <PackageReference Include="Refit" Version="6.3.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TaskManager.Command.Models\TaskManager.Command.Models.csproj" />
+  </ItemGroup>
+
+</Project>
