@@ -9,8 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TaskManager.Command.Models"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TaskManager.Client.WPF", "TaskManager.Client.WPF\TaskManager.Client.WPF.csproj", "{226F3FF2-378E-4FAE-9662-F26D3145A3AA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskManager.Api.IControllers", "TaskManager.Api.IControllers\TaskManager.Api.IControllers.csproj", "{6521CC44-989D-4720-A2AF-C73B6060BF3F}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,10 +27,6 @@ Global
 		{226F3FF2-378E-4FAE-9662-F26D3145A3AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{226F3FF2-378E-4FAE-9662-F26D3145A3AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{226F3FF2-378E-4FAE-9662-F26D3145A3AA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6521CC44-989D-4720-A2AF-C73B6060BF3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6521CC44-989D-4720-A2AF-C73B6060BF3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6521CC44-989D-4720-A2AF-C73B6060BF3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6521CC44-989D-4720-A2AF-C73B6060BF3F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
