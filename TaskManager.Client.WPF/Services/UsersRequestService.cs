@@ -10,9 +10,5 @@ namespace TaskManager.Client.WPF.Services
 {
     internal class UsersRequestService
     {
-        public AuthToken GetToken(string userName, string password)
-        {
-            var api = RestService.For<>
-        }
     }
 }

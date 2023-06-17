@@ -1,6 +1,8 @@
-﻿namespace TaskManager.Command.Models
+﻿using TaskManager.Command.Models.Abstracted;
+
+namespace TaskManager.Command.Models
 {
-    public record TaskModel: CommandModel
+    public class TaskModel: CommandModel
     {
         public DateTime StartDate { get; init; }
         public DateTime EndDate { get; init; }

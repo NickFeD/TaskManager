@@ -1,36 +1,63 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Data;
+using TaskManager.Api.Models.Abstracted;
 using TaskManager.Command.Models;
 
 namespace TaskManager.Api.Models
 {
-    public class Project : CommandObject
+    [Table("projects")]
+    public class Project : Abstracted.Model
     {
-        public int Id { get; set; }
-        public int? AdminId { get; set; }
-        public ProjectAdmin Admin { get; set; }
-        public List<User> AllUsers { get; set; } = new();
-        public List<Desk> AllDesks { get; set; } = new();
-        public ProjectStatus Status { get; set; }
-
-        public Project() { }
-        public Project(ProjectModel projectModel) : base(projectModel)
+        public Project()
         {
-            Id = projectModel.Id;
-            AdminId = projectModel.AdminId;
-            Status = projectModel.Status;
+            CreationData = DateTime.Now;
         }
 
-        internal ProjectModel ToDto() => new()
+        [Column("name")]
+        public string Name { get; set; }
+
+        [Column("description")]
+        public string? Description { get; set; }
+
+        [Column("creation_data")]
+        public DateTime CreationData { get; set; } = DateTime.Now;
+
+        [Column("creator_id")]
+        public int? CreatorId { get; set; }
+
+        public User? Creator { get; set; }
+
+        [Column("status")]
+        public ProjectStatus Status { get; set; }
+        public List<ProjectParticipant> Participants { get; set; } = new();
+        public List<UserRole>? UserRoles { get; set; } = new();
+
+        public static implicit operator Project(ProjectModel model)
         {
-            Id = Id,
-            AdminId = AdminId,
-            Description = Description,
-            Name = Name,
-            Photo = Photo,
-            CreationData = CreationData,
-            Status = Status,
-        };
+            return new Project()
+            {
+                Id = model.Id,
+                Name = model.Name,
+                Description = model.Description,
+                CreatorId = model.CreatorId,
+                Status = model.Status,
+                CreationData = model.CreationData,
+            };
+        }
+        public static implicit operator ProjectModel(Project model)
+        {
+            return new ProjectModel() 
+            {
+                Id = model.Id,
+                Name = model.Name,
+                Description = model.Description,
+                CreatorId = model.CreatorId,
+                Status = model.Status,
+                CreationData = model.CreationData,
+            };
+
+        }
     }
 }

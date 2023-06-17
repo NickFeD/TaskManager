@@ -1,6 +1,8 @@
-﻿namespace TaskManager.Command.Models
+﻿using TaskManager.Command.Models.Abstracted;
+
+namespace TaskManager.Command.Models
 {
-    public record DeskModel : CommandModel
+    public class DeskModel : CommandModel
     {
         public bool IsPrivate { get; init; }
         public string[]? Columns { get; init; }

@@ -1,75 +1,55 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using TaskManager.Api.Data;
 using TaskManager.Api.Models;
-using TaskManager.Api.Models.Data;
-using TaskManager.Api.Models.Services;
+using TaskManager.Api.Services;
 using TaskManager.Command.Models;
 
 namespace TaskManager.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class ProjectController : ControllerBase
     {
-        private readonly ApplicationContext _db;
-        private readonly ProjectsService _projectsServices;
-        private readonly UsersService _usersServices;
-        public ProjectController(ApplicationContext db)
+        private readonly ProjectService _projectService;
+
+        public ProjectController(ApplicationContext context)
         {
-            _db = db;
-            _projectsServices = new(_db);
-            _usersServices = new(_db);
+            _projectService = new(context);
         }
 
-        [HttpGet]
-        [Authorize(Roles = "Admin")]
-        public async Task<IEnumerable<ProjectModel>> Get() =>
-            await _projectsServices.GetAll();
-
-        [HttpGet("{id}")]
-        public IActionResult Get(int id)
+        [HttpGet("{userId}")]
+        public ActionResult<ProjectModel> GetByUserId(int userId)
         {
-            var projectModel = _projectsServices.Get(id);
-            return projectModel is null? NoContent() : Ok(projectModel);
-
-        }
-        [HttpPost]
-        [Authorize(Roles = $"Admin,Editor")]
-        public IActionResult Create([FromBody] ProjectModel projectModel)
-        {
-            if (projectModel == null)
-            {
-                return BadRequest();
-            }
-            var user = _usersServices.GetUser(HttpContext.User.Identity.Name);
-              return _projectsServices.Create(projectModel)?Ok(): NotFound();
+            Project[] model = _projectService.GetProjectsByUserId(userId).ToArray();
+            return model is null ? NotFound() : (ProjectModel)model[0];
         }
 
-        [HttpPatch("id")]
-        [Authorize(Roles = $"Admin,Editor")]
-        public IActionResult Update(int id, [FromBody] ProjectModel projectModel)
+        [HttpPost("{userId}")]
+        public IActionResult Create(int userId ,ProjectModel project) 
         {
-            if (projectModel == null)
-            {
-                return BadRequest();
-            }
-            return _projectsServices.Update(id, projectModel) ? Ok() : NotFound();
+            _projectService.Create(userId,(Project)project);
+            return CreatedAtAction(nameof(GetByUserId), new { id = project.CreatorId }, project);
         }
 
-        [HttpDelete("id")]
-        [Authorize(Roles = $"Admin,Editor")]
+        [HttpPut("{id}")]
+        public IActionResult Update(int id,ProjectModel projectModel) 
+        {
+            var existingModel = _projectService.GetById(id);
+            if (existingModel == null)
+                return NotFound();
+            _projectService.Update(projectModel);
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-           return _projectsServices.Delete(id) ? Ok() : NotFound();
+            var modelToDelete = _projectService.GetById(id);
+            if (modelToDelete == null)
+                return NotFound();
+            _projectService.Delete(id);
+            return NoContent();
         }
     }
 }

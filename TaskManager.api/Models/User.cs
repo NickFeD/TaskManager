@@ -1,28 +1,41 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using TaskManager.Api.Models.Abstracted;
 using TaskManager.Command.Models;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TaskManager.Api.Models
 {
-    public class User
+    [Table("users")]
+    public class User:Model
     {
-        public int Id { get; set; }
+        [Column("first_name")]
         public string FirstName { get; set; }
+
+        [Column("last_name")]
         public string LastName { get; set; }
+
+        [Column("email")]
         public string Email { get; set; }
+
+        [Column("password")]
         public string Password { get; set; }
-        public string Phone { get; set; }
-        public DateTime RegistrationData { get; set; }
+
+        [Column("phone")]
+        public string? Phone { get; set; }
+
+        [Column("registration_date")]
+        public DateTime RegistrationDate { get; set; } = DateTime.Now;
+
+        [Column("last_login_data")]
         public DateTime LastLoginData { get; set; }
-        public byte[] Photo { get; set; }
-        public List<Project> Projects { get; set; } = new();
-        public List<Desk> Desks { get; set; } = new();
-        public List<Task> Tasks { get; set; } = new();
-        public UserStatus Status { get; set; }
+        public List<ProjectParticipant>? Participants { get; set; } = new List<ProjectParticipant>();
+
         public User()
         {
-            RegistrationData = DateTime.Now;
+            RegistrationDate = DateTime.Now;
         }
+
         public User(UserModel model)
         {
             FirstName = model.FirstName;
@@ -30,25 +43,29 @@ namespace TaskManager.Api.Models
             Email = model.Email;
             Password = model.Password;
             Phone = model.Phone;
-            RegistrationData = DateTime.Now;
+            RegistrationDate = model.RegistrationDate;
             LastLoginData = model.LastLoginData;
-            Photo = model.Photo;
-            Status = model.Status;
+
         }
 
-        public UserModel ToDto() => new() 
+        public static implicit operator User(UserModel model)
         {
-            Id = Id,
-            FirstName = FirstName,
-            LastName = LastName,
-            Email = Email,
-            Password = Password,
-            Phone = Phone,
-            RegistrationData = RegistrationData,
-            LastLoginData = LastLoginData,
-            Photo = Photo,
-            Status = Status,
-            
-        };
+            return new User(model);
+        }
+        public static implicit operator UserModel(User model)
+        {
+            return new UserModel()
+            {
+                Id = model.Id,
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                Email = model.Email,
+                Password = model.Password,
+                Phone = model.Phone,
+                RegistrationDate = model.RegistrationDate,
+                LastLoginData = model.LastLoginData
+            };
+
+        }
     }
 }

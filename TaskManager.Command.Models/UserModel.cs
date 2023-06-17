@@ -1,23 +1,49 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TaskManager.Command.Models.Abstracted;
 
 namespace TaskManager.Command.Models
 {
-    public record UserModel
+    public class UserModel: Model
     {
-        public int Id { get; init; }
-        public string FirstName { get; init; }
-        public string LastName { get; init; }
-        public string Password { get; init; }
-        public string Email { get; init; }
-        public string Phone { get; init; }
-        public DateTime RegistrationData { get; init; }
-        public DateTime LastLoginData { get; init; }
-        public byte[]? Photo { get; init; }
-        public UserStatus Status { get; init; }
+
+#pragma warning disable CS8618 // Поле, не допускающее значения NULL, должно содержать значение, отличное от NULL, при выходе из конструктора. Возможно, стоит объявить поле как допускающее значения NULL.
+        public UserModel()
+        {
+        }
+#pragma warning restore CS8618 // Поле, не допускающее значения NULL, должно содержать значение, отличное от NULL, при выходе из конструктора. Возможно, стоит объявить поле как допускающее значения NULL.
+
+        public UserModel(string firstName, string lastName, string email, string password, string? phone, DateTime registrationDate, DateTime lastLoginData)
+        {
+            FirstName = firstName;
+            LastName = lastName;
+            Email = email;
+            Password = password;
+            Phone = phone;
+            RegistrationDate = registrationDate;
+            LastLoginData = lastLoginData;
+        }
+
+        public string FirstName { get; set; }
+
+        public string LastName { get; set; }
+
+        public string Email { get; set; }
+
+        public string Password { get; set; }
+
+        public string? Phone { get; set; }
+
+        public DateTime RegistrationDate { get; set; } = DateTime.Now;
+
+        public DateTime LastLoginData { get; set; }
+        //public byte[]? Photo { get; init; }
+
     }
-    
+
 }
