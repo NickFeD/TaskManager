@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TaskManager.Api.Models;
+using TaskManager.Api.Entity;
 
 namespace TaskManager.Api.Data
 {

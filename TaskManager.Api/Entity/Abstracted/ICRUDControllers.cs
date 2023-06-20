@@ -2,10 +2,10 @@
 
 namespace TaskManager.Api.Models.Abstracted
 {
-    public interface ICRUDControllers<T> where T : IModel
+    public interface ICRUDControllers<T>
     {
         [HttpGet("{id}")]
-        public ActionResult<T> Get(int id);
+        public ActionResult<T> GetById(int id);
         [HttpPost]
         public IActionResult Create([FromBody]T model);
         [HttpPut("{id}")]

@@ -5,15 +5,20 @@ using System.Data;
 using TaskManager.Api.Models.Abstracted;
 using TaskManager.Command.Models;
 
-namespace TaskManager.Api.Models
+namespace TaskManager.Api.Entity
 {
     [Table("projects")]
-    public class Project : Abstracted.Model
+    public class Project
     {
         public Project()
         {
             CreationData = DateTime.Now;
         }
+
+        [Key]
+        [Column("id")]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
 
         [Column("name")]
         public string Name { get; set; }
@@ -22,11 +27,13 @@ namespace TaskManager.Api.Models
         public string? Description { get; set; }
 
         [Column("creation_data")]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTime CreationData { get; set; } = DateTime.Now;
 
         [Column("creator_id")]
         public int? CreatorId { get; set; }
 
+        [ForeignKey(nameof(CreatorId))]
         public User? Creator { get; set; }
 
         [Column("status")]
