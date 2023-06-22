@@ -6,11 +6,11 @@ namespace TaskManager.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TestController : ControllerBase
+    public class TestsController : ControllerBase
     {
         Initialization initialization;
 
-        public TestController(ApplicationContext context)
+        public TestsController(ApplicationContext context)
         {
             initialization = new Initialization(context);
         }

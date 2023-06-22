@@ -9,10 +9,16 @@ namespace TaskManager.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class DeskController : CRUDController<DeskModel, DeskService>
+    public class ParticipantsController : CRUDController<ProjectParticipantModel, ParticipantService>
     {
-        public DeskController(ApplicationContext context) : base(new(context))
+        //[HttpGet("{id}")]
+        //public ActionResult GetById(int id)
+        //{
+        //   return 
+        //}
+        public ParticipantsController(ApplicationContext context) : base(new(context))
         {
+
         }
     }
 }

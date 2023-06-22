@@ -10,11 +10,11 @@ namespace TaskManager.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProjectController :CRUDController<ProjectModel,ProjectService>
+    public class ProjectsController :CRUDController<ProjectModel,ProjectService>
     {
         //private readonly ParticipantService _participantService;
 
-        public ProjectController(ApplicationContext context) : base(new(context))
+        public ProjectsController(ApplicationContext context) : base(new(context))
         {
             //_participantService = new(context);
         }
