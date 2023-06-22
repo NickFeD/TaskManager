@@ -1,4 +1,5 @@
-﻿using TaskManager.Api.Entity;
+﻿using Microsoft.EntityFrameworkCore;
+using TaskManager.Api.Entity;
 using TaskManager.Command.Models;
 
 namespace TaskManager.Api.Data
@@ -17,9 +18,9 @@ namespace TaskManager.Api.Data
             _context.SaveChanges();
             _context.Projects.AddRange(InitializationProject(num));
             _context.SaveChanges();
-            _context.Participants.AddRange(InitializationParticipants(Faker.RandomNumber.Next( num,num*50)));
+            _context.Roles.AddRange(InitializationRoles(Faker.RandomNumber.Next(num, num * num)));
             _context.SaveChanges();
-            _context.Roles.AddRange(InitializationRoles(num));
+            _context.Participants.AddRange(InitializationParticipants(Faker.RandomNumber.Next( num,num * num)));
             _context.SaveChanges();
         }
         public List<User> InitializationUser(int numUsers)
@@ -45,23 +46,8 @@ namespace TaskManager.Api.Data
         {
             List<Project> projects = new();
             List<User> users = _context.Users.ToList();
-            List<UserRole> roles = _context.Roles.ToList();
-            List<ProjectParticipant> participants = _context.Participants.ToList();
             for (int i = 0; i < numProject; i++)
             {
-                var values = new List<UserRole>();
-                if (roles.Count !=0)
-                    for (int j = 0; j < Faker.RandomNumber.Next(roles.Count - 1); j++)
-                    {
-                        values.Add(roles[Faker.RandomNumber.Next( roles.Count - 1)]);
-                    }
-
-                List<ProjectParticipant> values1 = new();
-                if (participants.Count !=0)
-                    for (int j = 0; j < Faker.RandomNumber.Next(0, participants.Count - 1); j++)
-                    {
-                        values1.Add(participants[Faker.RandomNumber.Next(participants.Count - 1)]);
-                    }
 
                 Project project = new Project()
                 {
@@ -69,8 +55,6 @@ namespace TaskManager.Api.Data
                     Description = Faker.Lorem.Sentence(),
                     Creator = users[Faker.RandomNumber.Next(users.Count - 1)],
                     Status = Faker.Enum.Random<ProjectStatus>(),
-                    UserRoles = values,
-                    Participants = values1,
                 };
                 projects.Add(project);
             }
@@ -80,15 +64,21 @@ namespace TaskManager.Api.Data
         public List<ProjectParticipant> InitializationParticipants(int numParticipants)
         {
             List<ProjectParticipant> participants = new ();
-            List<Project> projects = _context.Projects.ToList();
+            List<Project> projects = _context.Projects.Include(p=> p.UserRoles).ToList();
             List<User > users = _context.Users.ToList();
 
             for (int i = 0; i < numParticipants; i++)
             {
+                var project = projects[Faker.RandomNumber.Next(projects.Count - 1)];
+                var usersTemp = users[Faker.RandomNumber.Next(users.Count - 1)];
+                UserRole role = null;
+                if (project.UserRoles.Count !=0)
+                    role = project.UserRoles[Faker.RandomNumber.Next(project.UserRoles.Count - 1)];
                 ProjectParticipant participant = new()
                 {
-                    Project = projects[Faker.RandomNumber.Next(projects.Count-1)],
-                    User = users[Faker.RandomNumber.Next(users.Count-1)]
+                    Project = project,
+                    User = usersTemp,
+                    Role = role,
                 };
                 participants.Add(participant);
             }

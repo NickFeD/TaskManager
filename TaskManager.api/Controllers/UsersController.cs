@@ -18,11 +18,12 @@ namespace TaskManager.Api.Controllers
         { 
         }
 
-
-        [HttpGet]
-        public ActionResult<IEnumerable<UserModel>> GetAll()
+        [HttpGet("{userId}/projects")]
+        public ActionResult<List<ProjectModel>> GetByUserId(int userId)
         {
-            return Ok(_service.GetAll().Select(u => (UserModel)u));
+            var projects = _service.GetProjectsByUserId(userId).ToList();
+            var models = projects.Select(u => (ProjectModel)u).ToList();
+            return models is null ? NotFound() : models;
         }
     }
 }

@@ -4,6 +4,8 @@ namespace TaskManager.Api.Models.Abstracted
 {
     public interface ICRUDControllers<T>
     {
+        [HttpGet]
+        public ActionResult<List<T>> GetAll();
         [HttpGet("{id}")]
         public ActionResult<T> GetById(int id);
         [HttpPost]

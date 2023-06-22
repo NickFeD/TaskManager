@@ -11,5 +11,7 @@ namespace TaskManager.Command.Models
     {
         public int UserId { get; set; }
         public int ProjectId { get; set; }
+
+        public int UserRoleId { get; set; }
     }
 }

@@ -20,6 +20,13 @@ namespace TaskManager.Api.Models.Abstracted
             _service = service;
         }
 
+        [HttpGet]
+        public ActionResult<List<TModel>> GetAll()
+        {
+            var model = _service.GetAll();
+            return model is null ? NotFound() : model;
+        }
+
         [HttpGet("{id}")]
         public ActionResult<TModel> GetById(int id)
         {

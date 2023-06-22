@@ -14,6 +14,11 @@ namespace TaskManager.Api.Services
             _context = context;
         }
         //CRUT
+        public List<UserModel> GetAll()
+        {
+            return _context.Users.AsNoTracking().Select(u => (UserModel)u).ToList();
+        }
+
         public UserModel? GetById(int id) 
         {
             var user = _context.Users.Find(id);
@@ -49,9 +54,18 @@ namespace TaskManager.Api.Services
 
 
 
-        public IEnumerable<User> GetAll()
+        public IEnumerable<Project> GetProjectsByUserId(int userId)
         {
-            return _context.Users.AsNoTracking().ToList();
+            var projectParticipants = _context?
+                .Users?
+                .AsNoTracking()?
+                .Include(u => u.Participants)?
+                .ThenInclude(p => p.Project)?
+                .FirstOrDefault(u => u.Id == userId)?
+                .Participants?
+                .Distinct()
+                .ToArray();
+            return projectParticipants.Select(p => p.Project).ToList();
         }
 
     }

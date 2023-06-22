@@ -13,6 +13,10 @@ namespace TaskManager.Api.Services
             _context = context;
         }
         // CRUT
+        public List<ProjectModel> GetAll()
+        {
+            return _context.Projects.Select(p=> (ProjectModel)p).ToList();
+        }
         public ProjectModel? GetById(int id)
         {
             var project = _context.Projects.Find(id);
@@ -50,12 +54,6 @@ namespace TaskManager.Api.Services
             _context.SaveChanges();
         }
 
-
-
-        public IEnumerable<Project> GetProjectsByUserId(int userId)
-        {
-            var projectParticipants = _context.Users.AsNoTracking().Include(u => u.Participants).ThenInclude(p => p.Project).FirstOrDefault(u => u.Id == userId).Participants.ToArray();
-            return projectParticipants.Select(p => p.Project).ToList();
-        }
+        
     }
 }

@@ -11,7 +11,6 @@ namespace TaskManager.Api.Entity
         public UserRole()
 #pragma warning restore CS8618 // Поле, не допускающее значения NULL, должно содержать значение, отличное от NULL, при выходе из конструктора. Возможно, стоит объявить поле как допускающее значения NULL.
         {
-            Users = new List<User>();
         }
         [Key]
         [Column("id")]
@@ -21,11 +20,12 @@ namespace TaskManager.Api.Entity
         [Column("name")]
         public string Name { get; set; }
 
-        [Column("project_id")]
+        [ForeignKey(nameof(Project))]
         public int ProjectId { get; set; }
 
+        [Column("project_id")]
         public Project Project { get; set; }
 
-        public List<User>? Users { get; set; } = new();
+        public List<ProjectParticipant>? participants { get; set; } = new();
     }
 }

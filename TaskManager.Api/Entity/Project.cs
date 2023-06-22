@@ -40,6 +40,8 @@ namespace TaskManager.Api.Entity
         public ProjectStatus Status { get; set; }
         public List<ProjectParticipant> Participants { get; set; } = new();
         public List<UserRole>? UserRoles { get; set; } = new();
+        public List<Desk> Desks { get; set; } = new();
+
 
         public static implicit operator Project(ProjectModel model)
         {

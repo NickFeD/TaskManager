@@ -13,6 +13,7 @@ namespace TaskManager.Api.Data
         public DbSet<User> Users =>Set<User>();
         public DbSet<UserRole> Roles =>Set<UserRole>();
         public DbSet<Project> Projects =>Set<Project>();
+        public DbSet<Desk> Desks =>Set<Desk>();
         public DbSet<ProjectParticipant> Participants =>Set<ProjectParticipant>();
 
     }

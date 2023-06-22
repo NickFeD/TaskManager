@@ -13,6 +13,10 @@ namespace TaskManager.Api.Services
         {
             _context = context;
         }
+        public List<ProjectParticipantModel> GetAll()
+        {
+            return _context.Participants.Select(p=> (ProjectParticipantModel)p).ToList();
+        }
 
         public ProjectParticipantModel? GetById(int id)
         {
@@ -40,6 +44,7 @@ namespace TaskManager.Api.Services
                 return;
             _context.Participants.Remove(participant);
         }
+
 
     }
 }

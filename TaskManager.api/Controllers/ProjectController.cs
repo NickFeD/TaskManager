@@ -19,14 +19,6 @@ namespace TaskManager.Api.Controllers
             //_participantService = new(context);
         }
 
-        [HttpGet("{userId}")]
-        public ActionResult<List<ProjectModel>> GetByUserId(int userId)
-        {
-            var projects = _service.GetProjectsByUserId(userId).ToList();
-            var models = projects.Select(u => (ProjectModel)u).ToList();
-            return models is null ? NotFound() : models;
-        }
-
 
         //[HttpPost("/{projectId}/Users/{userId}")]
         //public IActionResult AddUsers(int projectId,int userId)
