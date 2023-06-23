@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace TaskManager.Api.Models.Abstracted
+namespace TaskManager.Api.Controllers.Abstracted
 {
     public interface ICRUDControllers<T>
     {

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using TaskManager.Api.Models.Abstracted;
+using TaskManager.Api.Controllers.Abstracted;
 using TaskManager.Command.Models;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -29,15 +29,18 @@ namespace TaskManager.Api.Entity
         public string? Phone { get; set; }
 
         [Column("registration_date")]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public DateTime RegistrationDate { get; set; } = DateTime.Now;
+        public DateTime RegistrationDate { get; set; }
 
         [Column("last_login_data")]
-        public DateTime LastLoginData { get; set; } = DateTime.Now;
+        public DateTime LastLoginData { get; set; }
         public List<ProjectParticipant>? Participants { get; set; } = new List<ProjectParticipant>();
 
 #pragma warning disable CS8618 // Поле, не допускающее значения NULL, должно содержать значение, отличное от NULL, при выходе из конструктора. Возможно, стоит объявить поле как допускающее значения NULL.
-        public User() { }
+        public User() 
+        {
+            RegistrationDate = DateTime.Now;
+            LastLoginData = DateTime.Now;
+        }
 #pragma warning restore CS8618 // Поле, не допускающее значения NULL, должно содержать значение, отличное от NULL, при выходе из конструктора. Возможно, стоит объявить поле как допускающее значения NULL.
 
         public User(UserModel model)
@@ -48,7 +51,6 @@ namespace TaskManager.Api.Entity
             Password = model.Password;
             Phone = model.Phone;
             RegistrationDate = model.RegistrationDate;
-            LastLoginData = model.LastLoginData;
 
         }
 

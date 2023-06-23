@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
-using TaskManager.Api.Models.Abstracted;
+using TaskManager.Api.Controllers.Abstracted;
 using TaskManager.Command.Models;
 
 namespace TaskManager.Api.Entity

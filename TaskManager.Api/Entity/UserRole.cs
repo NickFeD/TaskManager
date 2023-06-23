@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using TaskManager.Api.Models.Abstracted;
+using TaskManager.Api.Controllers.Abstracted;
 
 namespace TaskManager.Api.Entity
 {

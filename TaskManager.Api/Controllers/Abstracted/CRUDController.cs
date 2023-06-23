@@ -5,7 +5,7 @@ using TaskManager.Api.Data;
 using TaskManager.Api.Services;
 using TaskManager.Command.Models.Abstracted;
 
-namespace TaskManager.Api.Models.Abstracted
+namespace TaskManager.Api.Controllers.Abstracted
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -47,6 +47,7 @@ namespace TaskManager.Api.Models.Abstracted
             var existingModel = _service.GetById(id);
             if (existingModel == null)
                 return NotFound();
+            model.Id = id;
             _service.Update(model);
             return NoContent();
         }

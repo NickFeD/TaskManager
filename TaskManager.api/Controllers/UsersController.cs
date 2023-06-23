@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using TaskManager.Api.Data;
 using TaskManager.Api.Entity;
-using TaskManager.Api.Models.Abstracted;
+using TaskManager.Api.Controllers.Abstracted;
 using TaskManager.Api.Services;
 using TaskManager.Command.Models;
 

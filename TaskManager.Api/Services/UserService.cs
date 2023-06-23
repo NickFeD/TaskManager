@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaskManager.Api.Data;
 using TaskManager.Api.Entity;
-using TaskManager.Api.Models.Abstracted;
+using TaskManager.Api.Controllers.Abstracted;
 using TaskManager.Command.Models;
 
 namespace TaskManager.Api.Services
@@ -29,7 +29,9 @@ namespace TaskManager.Api.Services
 
         public void Update(UserModel model)
         {
-            _context.Users.Update(model);
+            var user = _context.Find(typeof(User),model.Id);
+            if (user is null) return;
+            _context.Entry(user).CurrentValues.SetValues(model);
             _context.SaveChanges();
         }
 
