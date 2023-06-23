@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TaskManager.Api.Data;
 
-namespace TaskManager.Api.Services
+namespace TaskManager.Api.Services.Abstracted
 {
-    public interface ICRUDService<T>
+    public interface ICRUDService<T> where T : class
     {
         public List<T> GetAll();
         public T? GetById(int id);

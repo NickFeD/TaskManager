@@ -1,5 +1,6 @@
 ﻿using TaskManager.Api.Data;
 using TaskManager.Api.Entity;
+using TaskManager.Api.Services.Abstracted;
 using TaskManager.Command.Models;
 
 namespace TaskManager.Api.Services

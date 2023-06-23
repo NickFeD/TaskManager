@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TaskManager.Api.Data;
-using TaskManager.Api.Services;
+using TaskManager.Api.Services.Abstracted;
 using TaskManager.Command.Models.Abstracted;
 
 namespace TaskManager.Api.Controllers.Abstracted

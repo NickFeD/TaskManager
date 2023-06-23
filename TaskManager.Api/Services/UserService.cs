@@ -3,6 +3,7 @@ using TaskManager.Api.Data;
 using TaskManager.Api.Entity;
 using TaskManager.Api.Controllers.Abstracted;
 using TaskManager.Command.Models;
+using TaskManager.Api.Services.Abstracted;
 
 namespace TaskManager.Api.Services
 {
