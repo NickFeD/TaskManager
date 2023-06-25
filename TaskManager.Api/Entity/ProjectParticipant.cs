@@ -6,7 +6,7 @@ using TaskManager.Command.Models;
 namespace TaskManager.Api.Entity
 {
     [Table("participants")]
-    public class ProjectParticipant
+    public class ProjectParticipant :ProjectParticipantModel
     {
 #pragma warning disable CS8618 // Поле, не допускающее значения NULL, должно содержать значение, отличное от NULL, при выходе из конструктора. Возможно, стоит объявить поле как допускающее значения NULL.
         public ProjectParticipant()
@@ -22,25 +22,14 @@ namespace TaskManager.Api.Entity
             ProjectId = project.Id;
         }
 
-        [Key]
-        [Column("id")]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
-
+        [ForeignKey(nameof(UserId))]
         public User User { get; set; }
 
-        [Column("user_id")]
-        public int UserId { get; set; }
-
+        [ForeignKey(nameof(ProjectId))]
         public Project Project { get; set; }
 
-        [Column("project_id")]
-        public int ProjectId { get; set; }
-        
+        [ForeignKey(nameof(UserRoleId))]
         public UserRole? Role { get; set; }
-
-        [Column("user_role_id")]
-        public int? UserRoleId { get; set; }
 
         public override bool Equals(object? obj)
         {
@@ -52,29 +41,6 @@ namespace TaskManager.Api.Entity
         public override int GetHashCode()
         {
             return HashCode.Combine(UserId, ProjectId);
-        }
-
-        
-
-        public static implicit operator ProjectParticipant(ProjectParticipantModel model)
-        {
-            return new ProjectParticipant()
-            {
-                ProjectId = model.ProjectId,
-                UserId = model.UserId,
-                UserRoleId = model.UserRoleId,
-                Id = model.Id
-            };
-        }
-        public static implicit operator ProjectParticipantModel(ProjectParticipant participant)
-        {
-            return new ProjectParticipant()
-            {
-                ProjectId = participant.ProjectId,
-                UserId = participant.UserId,
-                UserRoleId = participant.UserRoleId,
-                Id = participant.Id,
-            };
         }
     }
 }
