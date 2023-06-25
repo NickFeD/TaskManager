@@ -14,5 +14,7 @@ namespace TaskManager.Api.Entity
         [ForeignKey(nameof(ProjectId))]
         public Project Project { get; set; }
 
+        public List<Task> Tasks { get; set; }
+
     }
 }
