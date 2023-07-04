@@ -6,6 +6,7 @@ using TaskManager.Api.Entity;
 using TaskManager.Api.Controllers.Abstracted;
 using TaskManager.Api.Services;
 using TaskManager.Command.Models;
+using System.Diagnostics;
 
 namespace TaskManager.Api.Controllers
 {
@@ -18,6 +19,19 @@ namespace TaskManager.Api.Controllers
         { 
         }
 
+        public override IActionResult Delete(int id)
+        {
+            var modelToDelete = _service.GetById(id);
+            if (modelToDelete == null)
+                return NotFound();
+            _service.Delete(id);
+            return NoContent();
+        }
+        /// <summary>
+        /// Get a project by user id
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         [HttpGet("{userId}/projects")]
         public ActionResult<List<ProjectModel>> GetByUserId(int userId)
         {

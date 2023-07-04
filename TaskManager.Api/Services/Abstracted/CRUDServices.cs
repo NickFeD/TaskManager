@@ -36,6 +36,7 @@ namespace TaskManager.Api.Services.Abstracted
             if (entity is null)
                 return;
             _context.Entry(entity).CurrentValues.SetValues(model);
+            _context.SaveChanges();
         }
 
         public virtual void Delete(int id)
@@ -44,6 +45,7 @@ namespace TaskManager.Api.Services.Abstracted
             if (entity is null)
                 return;
             _context.Remove<TEntity>(entity);
+            _context.SaveChanges();
         }
 
         public void DoAction(Action action)

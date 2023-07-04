@@ -21,28 +21,35 @@ namespace TaskManager.Api.Controllers.Abstracted
         }
 
         [HttpGet]
-        public ActionResult<List<TModel>> GetAll()
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public virtual ActionResult<List<TModel>> GetAll()
         {
             var model = _service.GetAll();
             return model is null ? NotFound() : model;
         }
 
         [HttpGet("{id}")]
-        public ActionResult<TModel> GetById(int id)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public virtual ActionResult<TModel> GetById(int id)
         {
             var model = _service.GetById(id);
             return model is null ? NotFound() :model;
         }
 
         [HttpPost]
-        public IActionResult Create([FromBody] TModel model)
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        public virtual IActionResult Create([FromBody] TModel model)
         {
             _service.Create(model);
             return CreatedAtAction(nameof(GetById), new { id = model.Id }, model);
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update(int id, TModel model)
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public virtual IActionResult Update(int id, TModel model)
         {
             var existingModel = _service.GetById(id);
             if (existingModel == null)
@@ -53,10 +60,12 @@ namespace TaskManager.Api.Controllers.Abstracted
         }
         
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public virtual IActionResult Delete(int id)
         {
             var modelToDelete = _service.GetById(id);
-            if (modelToDelete != null)
+            if (modelToDelete == null)
                 return NotFound();
             _service.Delete(id);
             return NoContent();

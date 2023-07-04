@@ -16,6 +16,16 @@ namespace TaskManager.Api.Services
             return _context.Users.AsNoTracking().Select(u => (UserModel)u).ToList();
         }
 
+        public override void Delete(int id)
+        {
+            var entity = _context.Users.Find(id);
+            if (entity is null)
+                return;
+            var projects = _context.Projects.Where(p=> p.CreatorId == id).ToList();
+            _context.Users.Remove(entity);
+            _context.SaveChanges();
+        }
+
         public IEnumerable<Project> GetProjectsByUserId(int userId)
         {
             var projectParticipants = _context?

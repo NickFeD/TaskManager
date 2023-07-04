@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 using TaskManager.Api.Entity;
 using TaskManager.Command.Models;
 
@@ -17,6 +18,10 @@ namespace TaskManager.Api.Data
             _context.Users.AddRange(InitializationUser(num));
             _context.SaveChanges();
             _context.Projects.AddRange(InitializationProject(num));
+            _context.SaveChanges();
+            _context.Desks.AddRange(InitializationDesk(Faker.RandomNumber.Next(num, num * num)));
+            _context.SaveChanges();
+            _context.Tasks.AddRange(InitializationTask(Faker.RandomNumber.Next(num, num*num)));
             _context.SaveChanges();
             _context.Roles.AddRange(InitializationRoles(Faker.RandomNumber.Next(num, num * num)));
             _context.SaveChanges();
@@ -59,6 +64,45 @@ namespace TaskManager.Api.Data
                 projects.Add(project);
             }
             return projects;
+        }
+
+        public List<Desk> InitializationDesk(int numDesk)
+        {
+            List<Desk> desks = new();
+            List<Project> projects = _context.Projects.ToList();
+            for (int i = 0; i < numDesk; i++)
+            {
+                var desk = new Desk()
+                {
+                    CreationData = DateTime.Now,
+                    Description = Faker.Lorem.Sentence(),
+                    Name = Faker.Company.Name(),
+                    Project = projects[Faker.RandomNumber.Next(projects.Count - 1)],
+                };
+                desks.Add(desk);
+            }
+            return desks;
+        }
+
+        public List<Entity.Task> InitializationTask(int numTask)
+        {
+            List<Entity.Task> tasks = new();
+            List<User> users = _context.Users.ToList();
+            List<Desk> desks = _context.Desks.ToList();
+            for (int i = 0; i < numTask; i++)
+            {
+                var task = new Entity.Task()
+                {
+                    CreationData = DateTime.Now,
+                    Description = Faker.Lorem.Sentence(),
+                    Name = Faker.Company.Name(),
+                    StartDate = DateTime.Now,
+                    EndDate = DateTime.Now.AddDays(1),
+                    Сreator = users[Faker.RandomNumber.Next(users.Count - 1)],
+                    Desk = desks[Faker.RandomNumber.Next(desks.Count - 1)],
+                };
+            }
+            return tasks;
         }
 
         public List<ProjectParticipant> InitializationParticipants(int numParticipants)

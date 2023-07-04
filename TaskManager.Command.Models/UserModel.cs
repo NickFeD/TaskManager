@@ -41,7 +41,7 @@ namespace TaskManager.Command.Models
 
         public DateTime RegistrationDate { get; set; } = DateTime.Now;
 
-        public DateTime LastLoginData { get; set; }
+        public DateTime LastLoginData { get; set; } = DateTime.Now;
         //public byte[]? Photo { get; init; }
 
     }
