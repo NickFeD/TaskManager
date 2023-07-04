@@ -42,8 +42,12 @@ namespace TaskManager.Api.Controllers.Abstracted
         [ProducesResponseType(StatusCodes.Status201Created)]
         public virtual IActionResult Create([FromBody] TModel model)
         {
-            _service.Create(model);
-            return CreatedAtAction(nameof(GetById), new { id = model.Id }, model);
+           var modelToCreate = _service.Create(model);
+            if (modelToCreate is null)
+            {
+                return BadRequest();
+            }
+            return CreatedAtAction(nameof(GetById), new { id = modelToCreate.Id }, modelToCreate);
         }
 
         [HttpPut("{id}")]

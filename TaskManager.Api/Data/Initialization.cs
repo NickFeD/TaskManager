@@ -101,6 +101,7 @@ namespace TaskManager.Api.Data
                     Сreator = users[Faker.RandomNumber.Next(users.Count - 1)],
                     Desk = desks[Faker.RandomNumber.Next(desks.Count - 1)],
                 };
+                tasks.Add(task);
             }
             return tasks;
         }

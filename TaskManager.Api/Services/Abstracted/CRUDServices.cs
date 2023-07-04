@@ -21,7 +21,7 @@ namespace TaskManager.Api.Services.Abstracted
             return entity is null ? null : (TModel)entity;
         }
 
-        public virtual TModel Create(TModel model)
+        public virtual TModel? Create(TModel model)
         {
             TEntity entity = new();
             _context.Add(entity);

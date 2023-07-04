@@ -10,6 +10,14 @@ namespace TaskManager.Api.Services
         {
         }
 
+        public override TaskModel? Create(TaskModel model)
+        {
+            var user = _context.Users.Find(model.СreatorId);
+            if (user is null)
+                return null;
+            return base.Create(model);
+        }
+
         public override List<TaskModel> GetAll()
         {
             return _context.Tasks.Select(t=>(TaskModel)t).ToList();
