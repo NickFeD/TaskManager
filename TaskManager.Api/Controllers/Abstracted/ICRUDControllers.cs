@@ -7,7 +7,7 @@ namespace TaskManager.Api.Controllers.Abstracted
         [HttpGet]
         public ActionResult<List<T>> GetAll();
         [HttpGet("{id}")]
-        public ActionResult<T> GetById(int id);
+        public IActionResult GetById(int id);
         [HttpPost]
         public IActionResult Create([FromBody]T model);
         [HttpPut("{id}")]

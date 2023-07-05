@@ -32,10 +32,10 @@ namespace TaskManager.Api.Controllers.Abstracted
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public virtual ActionResult<TModel> GetById(int id)
+        public virtual IActionResult GetById(int id)
         {
             var model = _service.GetById(id);
-            return model is null ? NotFound() :model;
+            return model is null ? NotFound() :Ok(model);
         }
 
         [HttpPost]

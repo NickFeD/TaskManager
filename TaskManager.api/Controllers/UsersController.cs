@@ -33,7 +33,7 @@ namespace TaskManager.Api.Controllers
         /// <param name="userId"></param>
         /// <returns></returns>
         [HttpGet("{userId}/projects")]
-        public ActionResult<List<ProjectModel>> GetByUserId(int userId)
+        public ActionResult<List<ProjectModel>> GetProjectByUserId(int userId)
         {
             var projects = _service.GetProjectsByUserId(userId).ToList();
             var models = projects.Select(u => (ProjectModel)u).ToList();
