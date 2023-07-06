@@ -1,16 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using TaskManager.Api.Controllers.Abstracted;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using TaskManager.Command.Models;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TaskManager.Api.Entity
 {
-    [Table("users")]
-    public class User: UserModel
+    public class User : UserModel
     {
-        public List<ProjectParticipant>? Participants { get; set; } = new List<ProjectParticipant>();
-        public User() 
+        public List<ProjectParticipant>? Participants { get; set; } = new();
+        public List<UserRefreshToken> RefreshTokens { get; set; } = new();
+        
+        public User()
         {
             RegistrationDate = DateTime.Now;
             LastLoginData = DateTime.Now;

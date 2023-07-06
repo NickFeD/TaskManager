@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TaskManager.Api.Data;
 
@@ -26,6 +27,12 @@ namespace TaskManager.Api.Controllers
         {
             initialization.InitializationDb(num);
             return Ok("DbFull");
+        }
+        [Authorize]
+        [HttpGet("Authorize")]
+        public IActionResult TestAuthorize()
+        {
+            return Ok("ok");
         }
     }
 }

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using System.Text;
 using TaskManager.Api.Data;
@@ -85,6 +86,15 @@ namespace TaskManager.Api
                 .AddJwtBearer(jwtOptions =>
                 {
                     jwtOptions.TokenValidationParameters = tokenValidation;
+                    jwtOptions.Events = new JwtBearerEvents();
+                    jwtOptions.Events.OnTokenValidated = async (context) =>
+                    {
+                        var ipAddress = context.Request.HttpContext.Connection.RemoteIpAddress.ToString();
+                        var jwtService = context.Request.HttpContext.RequestServices.GetService<IJwtServices>();
+                        var jwtToken = context.SecurityToken as JwtSecurityToken;
+                        if (!await jwtService.IsTokenValid(jwtToken.RawData, ipAddress))
+                            context.Fail("Invalid token details.");
+                    };
                 });
 
             services.AddTransient<IJwtServices, JwtServices>();
