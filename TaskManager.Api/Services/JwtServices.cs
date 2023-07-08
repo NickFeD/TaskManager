@@ -1,4 +1,5 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -35,8 +36,9 @@ namespace TaskManager.Api.Services
 
         public async Task<AuthResponse> GetTokenAsync(AuthRequest authRequest, string ipAddress)
         {
-            var user = _context.Users.FirstOrDefault(u => u.Email.Equals(authRequest.Email)
-            && u.Password.Equals(authRequest.Password));
+            var user = _context.Users.AsNoTracking()
+                .FirstOrDefault(u => u.Email.Equals(authRequest.Email)
+                    && u.Password.Equals(authRequest.Password));
             if (user is null)
                 return await Task.FromResult<AuthResponse>(null);
             string tokenString = GenerateToken(user.Email);
@@ -46,11 +48,12 @@ namespace TaskManager.Api.Services
 
         public Task<bool> IsTokenValid(string accessToken, string ipAddress)
         {
-            var isValid = _context.UserRefreshTokens.FirstOrDefault(x => x.Token == accessToken
+            var isValid = _context.UserRefreshTokens.AsNoTracking().FirstOrDefault(x => x.Token == accessToken
             && x.IpAddress == ipAddress) != null;
             return Task.FromResult(isValid);
         }
         #endregion
+
         #region Private Metod
         private async Task<AuthResponse> SaveTokenDetails(string ipAddress, int userId, string tokenString, string refreshTokenString)
         {
@@ -71,6 +74,7 @@ namespace TaskManager.Api.Services
             refreshToken.Token = tokenString;
 
             await _context.SaveChangesAsync();
+
             return await Task.FromResult(new AuthResponse
             {
                 Token = tokenString,
