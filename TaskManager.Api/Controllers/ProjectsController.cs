@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TaskManager.Api.Controllers.Abstracted;
 using TaskManager.Api.Data;
 using TaskManager.Api.Services;
@@ -7,6 +8,7 @@ using Task = System.Threading.Tasks.Task;
 
 namespace TaskManager.Api.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ProjectsController : ControllerBase, ICRUDControllers<ProjectModel>

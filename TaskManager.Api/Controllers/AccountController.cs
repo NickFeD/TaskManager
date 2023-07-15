@@ -1,13 +1,10 @@
-﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using TaskManager.Api.Data;
 using TaskManager.Api.Entity;
 using TaskManager.Api.Services.Abstracted;
 using TaskManager.Command.Models;
 using RouteAttribute = Microsoft.AspNetCore.Components.RouteAttribute;
-using Microsoft.AspNetCore.Http;
 
 namespace TaskManager.Api.Controllers
 {
@@ -24,6 +21,11 @@ namespace TaskManager.Api.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="authRequest"></param>
+        /// <returns></returns>
         [HttpPost("[action]")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status400BadRequest)]
@@ -39,6 +41,11 @@ namespace TaskManager.Api.Controllers
             return Ok(authResponse);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         [HttpPost("[action]")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status400BadRequest)]
@@ -61,7 +68,7 @@ namespace TaskManager.Api.Controllers
             _context.UserRefreshTokens.Update(userRefreshToken);
             await _context.SaveChangesAsync();
 
-            var email = token.Claims.FirstOrDefault(x=> x.Type == JwtRegisteredClaimNames.Email).Value;
+            var email = token.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Email).Value;
             var authResponse = await _jwtServices.GetRefreshTokenAsync(ipAddress, userRefreshToken.UserId, email);
             return Ok(authResponse);
         }
