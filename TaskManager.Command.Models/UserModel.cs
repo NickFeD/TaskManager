@@ -1,21 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TaskManager.Command.Models.Abstracted;
+﻿using TaskManager.Command.Models.Abstracted;
 
 namespace TaskManager.Command.Models
 {
-    public class UserModel: Model
+    public class UserModel : Model
     {
 
 #pragma warning disable CS8618 // Поле, не допускающее значения NULL, должно содержать значение, отличное от NULL, при выходе из конструктора. Возможно, стоит объявить поле как допускающее значения NULL.
-        public UserModel()
-        {
-        }
+        public UserModel() { }
 #pragma warning restore CS8618 // Поле, не допускающее значения NULL, должно содержать значение, отличное от NULL, при выходе из конструктора. Возможно, стоит объявить поле как допускающее значения NULL.
 
         public UserModel(string firstName, string lastName, string email, string password, string? phone, DateTime registrationDate, DateTime lastLoginData)

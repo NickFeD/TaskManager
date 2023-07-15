@@ -7,6 +7,7 @@ using TaskManager.Api.Entity;
 using TaskManager.Api.Services.Abstracted;
 using TaskManager.Command.Models;
 using RouteAttribute = Microsoft.AspNetCore.Components.RouteAttribute;
+using Microsoft.AspNetCore.Http;
 
 namespace TaskManager.Api.Controllers
 {
@@ -24,17 +25,24 @@ namespace TaskManager.Api.Controllers
         }
 
         [HttpPost("[action]")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesDefaultResponseType]
         public async Task<IActionResult> AuthToken([FromBody] AuthRequest authRequest)
         {
             if (!ModelState.IsValid)
                 return BadRequest(new AuthResponse { IsSuccess = false, Reason = "Email and password most by provided." });
             var authResponse = await _jwtServices.GetTokenAsync(authRequest, HttpContext.Connection.RemoteIpAddress.ToString());
             if (authResponse is null)
-                return Unauthorized();
+                return Unauthorized(new AuthResponse { IsSuccess = false, Reason = "The email or password is incorrect" });
             return Ok(authResponse);
         }
 
         [HttpPost("[action]")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status400BadRequest)]
+        [ProducesDefaultResponseType]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
         {
             if (!ModelState.IsValid)

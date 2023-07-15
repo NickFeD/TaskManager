@@ -2,17 +2,21 @@
 
 namespace TaskManager.Api.Controllers.Abstracted
 {
-    public interface ICRUDControllers<T>
+    public interface ICRUDControllers<TModel>
     {
         [HttpGet]
-        public ActionResult<List<T>> GetAll();
+        public Task<IActionResult> GetAll();
+
         [HttpGet("{id}")]
-        public IActionResult GetById(int id);
+        public Task<IActionResult> GetById(int id);
+
         [HttpPost]
-        public IActionResult Create([FromBody]T model);
+        public Task<IActionResult> Create([FromBody] TModel model);
+
         [HttpPut("{id}")]
-        public IActionResult Update(int id,T model);
+        public Task<IActionResult> Update(int id, TModel model);
+
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id);
+        public Task<IActionResult> Delete(int id);
     }
 }

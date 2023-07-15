@@ -34,13 +34,13 @@ namespace TaskManager.Api.Services
             return await SaveTokenDetails(ipAddress, userId, accessToken, refreshToken);
         }
 
-        public async Task<AuthResponse> GetTokenAsync(AuthRequest authRequest, string ipAddress)
+        public async Task<AuthResponse?> GetTokenAsync(AuthRequest authRequest, string ipAddress)
         {
             var user = _context.Users.AsNoTracking()
                 .FirstOrDefault(u => u.Email.Equals(authRequest.Email)
                     && u.Password.Equals(authRequest.Password));
             if (user is null)
-                return await Task.FromResult<AuthResponse>(null);
+                return null;
             string tokenString = GenerateToken(user.Email);
             string refreshTokenString = GenerateRefreshToken();
             return await SaveTokenDetails(ipAddress, user.Id, tokenString, refreshTokenString);
@@ -75,17 +75,17 @@ namespace TaskManager.Api.Services
 
             await _context.SaveChangesAsync();
 
-            return await Task.FromResult(new AuthResponse
+            return new AuthResponse
             {
                 Token = tokenString,
                 RefreshToken = refreshTokenString,
                 IsSuccess = true,
                 ExpiresRefreshToken = _expiresRefreshToken,
                 ExpiresToken = _expiresToken,
-            });
+            };
         }
 
-        private string GenerateRefreshToken()
+        private static string GenerateRefreshToken()
         {
             var byteArray = RandomNumberGenerator.GetBytes(64);
             return Convert.ToBase64String(byteArray);
@@ -94,6 +94,8 @@ namespace TaskManager.Api.Services
         private string GenerateToken(string userEmail)
         {
             var jwtKey = _configuration.GetValue<string>("JwtSettings:Key");
+            if (jwtKey is null)
+                throw new ArgumentNullException(nameof(jwtKey));
             var keyByte = Encoding.ASCII.GetBytes(jwtKey);
 
             var tokenHandler = new JwtSecurityTokenHandler();
