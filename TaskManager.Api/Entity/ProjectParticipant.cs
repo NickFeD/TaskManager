@@ -6,30 +6,39 @@ using TaskManager.Command.Models;
 namespace TaskManager.Api.Entity
 {
     [Table("participants")]
-    public class ProjectParticipant :ProjectParticipantModel
+    public class ProjectParticipant
     {
 #pragma warning disable CS8618 // Поле, не допускающее значения NULL, должно содержать значение, отличное от NULL, при выходе из конструктора. Возможно, стоит объявить поле как допускающее значения NULL.
-        public ProjectParticipant()
-        {
-        }
+        public ProjectParticipant() { }
 #pragma warning restore CS8618 // Поле, не допускающее значения NULL, должно содержать значение, отличное от NULL, при выходе из конструктора. Возможно, стоит объявить поле как допускающее значения NULL.
 
-        public ProjectParticipant(User user, Project project)
-        {
-            User = user;
-            UserId = user.Id;
-            Project = project;
-            ProjectId = project.Id;
-        }
+        public int Id { get; set; }
+
+        public int UserId { get; set; }
 
         [ForeignKey(nameof(UserId))]
         public User User { get; set; }
 
+        public int ProjectId { get; set; }
+
         [ForeignKey(nameof(ProjectId))]
         public Project Project { get; set; }
 
+        public int? UserRoleId { get; set; }
+
         [ForeignKey(nameof(UserRoleId))]
         public UserRole? Role { get; set; }
+
+        public ProjectParticipantModel ToDto()
+        {
+            return new ProjectParticipantModel
+            {
+                Id = Id,
+                UserId = UserId,
+                UserRoleId = UserRoleId,
+                ProjectId = ProjectId,
+            };
+        }
 
         public override bool Equals(object? obj)
         {

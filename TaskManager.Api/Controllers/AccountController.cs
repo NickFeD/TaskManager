@@ -30,7 +30,6 @@ namespace TaskManager.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status401Unauthorized)]
-        [ProducesDefaultResponseType]
         public async Task<IActionResult> AuthToken([FromBody] AuthRequest authRequest)
         {
             if (!ModelState.IsValid)
@@ -49,7 +48,6 @@ namespace TaskManager.Api.Controllers
         [HttpPost("[action]")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status400BadRequest)]
-        [ProducesDefaultResponseType]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
         {
             if (!ModelState.IsValid)

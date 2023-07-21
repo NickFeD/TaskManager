@@ -1,21 +1,25 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 using TaskManager.Api.Controllers.Abstracted;
 using TaskManager.Api.Data;
-using TaskManager.Api.Entity;
 using TaskManager.Api.Services;
 using TaskManager.Command.Models;
 using Task = System.Threading.Tasks.Task;
+using Microsoft.AspNetCore.Http;
 
 namespace TaskManager.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UsersController : ControllerBase, ICRUDControllers<UserModel>
+    public class UsersController : ControllerBase, ICRUDController<UserModel>
     {
         private readonly UserService _service;
-        public UsersController(ApplicationContext context) { _service = new(context); }
+        private readonly HttpContextHandlerService _httpHandler;
+        public UsersController(ApplicationContext context)
+        {
+            _service = new(context);
+            _httpHandler = new(context, HttpContext);
+        }
 
         /// <summary>
         /// Create a user
@@ -23,16 +27,16 @@ namespace TaskManager.Api.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
-        [ProducesResponseType(typeof(UserModel), StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public Task<IActionResult> Create([FromBody] UserModel model)
+        [ProducesResponseType(typeof(Response<UserModel>), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(Response<UserModel>), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Create([FromBody] UserModel model)
         {
             if (model is null)
-                return Task.FromResult((IActionResult)BadRequest());
-            var modelToCreate = _service.Create(model);
-            if (modelToCreate is null)
-                return Task.FromResult((IActionResult)BadRequest());
-            return Task.FromResult((IActionResult)CreatedAtAction(nameof(GetById), new { id = modelToCreate.Id }, modelToCreate));
+                return BadRequest(new Response<UserModel> { IsSuccess = false, Reason = "You didn't send anything" });
+            var modelToCreate = await _service.CreateAsync(model);
+            if (!modelToCreate.IsSuccess)
+                return BadRequest(modelToCreate);
+            return CreatedAtAction(nameof(GetById), new { id = modelToCreate.Model.Id }, modelToCreate);
         }
 
         /// <summary>
@@ -40,17 +44,17 @@ namespace TaskManager.Api.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        [HttpDelete]
         [Authorize]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public Task<IActionResult> Delete(int id)
+        [HttpDelete]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Delete(int id)
         {
-            var userToDelete = _service.GetById(id);
-            if (userToDelete is null)
-                return Task.FromResult((IActionResult)NoContent());
-            _service.Delete(id);
-            return Task.FromResult((IActionResult)Ok());
+            var userToDelete = await _service.GetByIdAsync(id);
+            if (!userToDelete.IsSuccess)
+                return BadRequest(new Response { IsSuccess = false, Reason = userToDelete.Reason });
+            var response = _service.Delete(id);
+            return Ok(response);
         }
 
         /// <summary>
@@ -59,10 +63,15 @@ namespace TaskManager.Api.Controllers
         /// <returns></returns>
         [HttpGet]
         [Authorize]
-        [ProducesResponseType(typeof(List<UserModel>), StatusCodes.Status200OK)]
-        public Task<IActionResult> GetAll()
+        [ProducesResponseType(typeof(Response<List<UserModel>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response<List<UserModel>>), StatusCodes.Status400BadRequest)]
+        [ProducesDefaultResponseType]
+        public  async Task<IActionResult> GetAll()
         {
-            return Task.FromResult<IActionResult>(Ok(_service.GetAll()));
+            var users = await _service.GetAllAsync();
+            if (!users.IsSuccess)
+                return BadRequest(users);
+            return Ok(users);
         }
 
         /// <summary>
@@ -72,14 +81,14 @@ namespace TaskManager.Api.Controllers
         /// <returns></returns>
         [Authorize]
         [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(UserModel), StatusCodes.Status200OK)]
-        public Task<IActionResult> GetById(int id)
+        [ProducesResponseType(typeof(Response<UserModel>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response<UserModel>), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetById(int id)
         {
-            var userToGet = _service.GetById(id);
-            if (userToGet is null)
-                return Task.FromResult((IActionResult)NotFound());
-            return Task.FromResult((IActionResult)Ok(userToGet));
+            var userToGet = await _service.GetByIdAsync(id);
+            if (!userToGet.IsSuccess)
+                return NotFound(userToGet);
+            return Ok(userToGet);
         }
 
         /// <summary>
@@ -90,22 +99,21 @@ namespace TaskManager.Api.Controllers
         /// <returns></returns>
         [HttpPut]
         [Authorize]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public Task<IActionResult> Update(int id, UserModel model)
+        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Update(int id, UserModel model)
         {
-            var userAuthorize = GetUser();
+            var userAuthorize = _httpHandler.GetUser();
             if (userAuthorize is null)
-                return Task.FromResult((IActionResult)BadRequest());
+                return BadRequest(new Response { IsSuccess = false, Reason ="Not Found User"});
             if (userAuthorize.Id != id)
-                if (userAuthorize is null)
-                    return Task.FromResult((IActionResult)BadRequest());
-            var user = _service.GetById(id);
-            if (user is null)
-                return Task.FromResult((IActionResult)NotFound());
-            model.Id = user.Id;
-            _service.Update(model);
-            return Task.FromResult((IActionResult)Ok());
+                return BadRequest(new Response { IsSuccess = false, Reason = "Не прикидывайся" });
+            var user = await _service.GetByIdAsync(id);
+            if (!user.IsSuccess)
+                return BadRequest(new Response { IsSuccess = user .IsSuccess, Reason= user.Reason });
+            model.Id = user.Model.Id;
+            var response = _service.Update(model);
+            return Ok(response);
         }
 
         /// <summary>
@@ -114,25 +122,15 @@ namespace TaskManager.Api.Controllers
         /// <param name="userId"></param>
         /// <returns></returns>
         [HttpGet("{userId}/projects")]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(List<ProjectModel>), StatusCodes.Status200OK)]
-        public Task<IActionResult> GetProjectByUserId(int userId)
+        [ProducesResponseType(typeof(Response<List<ProjectModel>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response<List<ProjectModel>>), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetProjectByUserId(int userId)
         {
-            var projects = _service.GetProjectsByUserId(userId).ToList();
-            var models = projects.Select(u => u.ToDto()).ToList();
-            return models is null ? Task.FromResult((IActionResult)NotFound()) : Task.FromResult((IActionResult)Ok(models));
-        }
-
-
-        private User? GetUser()
-        {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            if (identity is null)
-                return null;
-            var emailUser = identity.FindFirst(ClaimTypes.Email)?.Value;
-            if (emailUser is null)
-                return null;
-            return _service.GetByEmail(emailUser);
+            var projects = await _service.GetProjectsByUserIdAsync(userId);
+            if (!projects.IsSuccess)
+                return BadRequest(projects);
+            var models = projects.Model.Select(u => u.ToDto()).ToList();
+            return Ok(models);
         }
     }
 }

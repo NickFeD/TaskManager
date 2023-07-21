@@ -4,14 +4,13 @@ using TaskManager.Api.Controllers.Abstracted;
 using TaskManager.Api.Data;
 using TaskManager.Api.Services;
 using TaskManager.Command.Models;
-using Task = System.Threading.Tasks.Task;
 
 namespace TaskManager.Api.Controllers
 {
     [Authorize]
-    [Route("api/[controller]")]
     [ApiController]
-    public class ProjectsController : ControllerBase, ICRUDControllers<ProjectModel>
+    [Route("api/[controller]")]
+    public class ProjectsController : ControllerBase, ICRUDController<ProjectModel>
     {
         private readonly ProjectService _service;
 
@@ -23,14 +22,16 @@ namespace TaskManager.Api.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
-        public Task<IActionResult> Create([FromBody] ProjectModel model)
+        [ProducesResponseType(typeof(Response<ProjectModel>), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(Response<ProjectModel>), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Create([FromBody] ProjectModel model)
         {
             if (model is null)
-                return Task.FromResult((IActionResult)BadRequest());
-            var modelToCreate = _service.Create(model);
-            if (modelToCreate is null)
-                return Task.FromResult((IActionResult)BadRequest());
-            return Task.FromResult((IActionResult)CreatedAtAction(nameof(GetById), new { id = modelToCreate.Id }, modelToCreate));
+                return BadRequest(new Response<ProjectModel> { IsSuccess = false, Reason = "Request null" });
+            var modelToCreate = await _service.CreateAsync(model);
+            if (!modelToCreate.IsSuccess)
+                return BadRequest(modelToCreate);
+            return CreatedAtAction(nameof(GetById), new { id = modelToCreate.Model.Id }, modelToCreate);
         }
 
         /// <summary>
@@ -39,13 +40,15 @@ namespace TaskManager.Api.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete]
-        public Task<IActionResult> Delete(int id)
+        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Delete(int id)
         {
-            var project = _service.GetById(id);
-            if (project is null)
-                return Task.FromResult((IActionResult)BadRequest());
+            var project = await _service.GetByIdAsync(id);
+            if (!project.IsSuccess)
+                return BadRequest(project);
             _service.Delete(id);
-            return Task.FromResult((IActionResult)NoContent());
+            return Ok(project);
         }
 
         /// <summary>
@@ -53,9 +56,14 @@ namespace TaskManager.Api.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public Task<IActionResult> GetAll()
+        [ProducesResponseType(typeof(Response<List<ProjectModel>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response<List<ProjectModel>>), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetAll()
         {
-            return Task.FromResult((IActionResult)Ok(_service.GetAll()));
+            var response = await _service.GetAllAsync();
+            if (!response.IsSuccess)
+                return BadRequest(response);
+            return Ok(response);
         }
 
         /// <summary>
@@ -64,9 +72,14 @@ namespace TaskManager.Api.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id}")]
-        public Task<IActionResult> GetById(int id)
+        [ProducesResponseType(typeof(Response<ProjectModel>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response<ProjectModel>), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetById(int id)
         {
-            return Task.FromResult((IActionResult)Ok(_service.GetById(id)));
+            var response = await _service.GetByIdAsync(id);
+            if (!response.IsSuccess)
+                return BadRequest(response);
+            return Ok(response);
         }
 
         /// <summary>
@@ -76,15 +89,19 @@ namespace TaskManager.Api.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPut]
-        public Task<IActionResult> Update(int id, ProjectModel model)
+        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Update(int id, ProjectModel model)
         {
-            _service.Update(model);
-            return Task.FromResult((IActionResult)Ok());
+            var response = await _service.UpdateAsync(model);
+            if (!response.IsSuccess)
+                return BadRequest(response);
+            return Ok(response);
         }
 
 
         //[HttpPost("/{projectId}/Users/{userId}")]
-        //public IActionResult AddUser(int projectId,int userId)
+        //public Task<IActionResult> AddUser(int projectId, int userId)
         //{
         //    ProjectParticipant participant = new()
         //    {

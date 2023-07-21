@@ -3,19 +3,20 @@ using TaskManager.Api.Data;
 using TaskManager.Api.Entity;
 using TaskManager.Api.Services.Abstracted;
 using TaskManager.Command.Models;
+using Task = System.Threading.Tasks.Task;
 
 namespace TaskManager.Api.Services
 {
-    public class UserService : ICRUDService<UserModel>
+    public class UserService : ICRUDService<UserModel>,ICRUDServiceAsync<UserModel>
     {
         private readonly ApplicationContext _context;
         public UserService(ApplicationContext context) { _context = context; }
 
-        public UserModel? Create(UserModel model)
+        public Response<UserModel> Create(UserModel model)
         {
             var user = _context.Users.AsNoTracking().FirstOrDefault(u => u.Email.Equals(model.Email));
             if (user is not null)
-                return null;
+                return new() { IsSuccess = false, Reason = "At this moment, the email is busy" };
             user = new Entity.User()
             {
                 Id = model.Id,
@@ -30,52 +31,56 @@ namespace TaskManager.Api.Services
             _context.Users.Add(user);
             _context.SaveChanges();
             model.Id = user.Id;
-            return model;
+            return new() { IsSuccess = true, Model = model };
         }
 
-        public void Delete(int id)
+        public Response Delete(int id)
         {
             var userToDelete = _context.Users.Find(id);
             if (userToDelete is null)
-                return;
+                return new() { IsSuccess = false, Reason = "User not found" };
             var projects = _context.Projects.Where(p => p.CreatorId == id).ToList();
             _context.Users.Remove(userToDelete);
             _context.SaveChanges();
-            return;
+            return new() { IsSuccess = true };
 
         }
 
-        public List<UserModel> GetAll()
+        public Response<List<UserModel>> GetAll()
         {
-            return _context.Users.ToList().Select(u => u.ToDto()).ToList();
+            var users = _context.Users.ToList().Select(u => u.ToDto()).ToList();
+            if (users is null)
+                return new() { IsSuccess = false, Reason = "No users" };
+            return new() { IsSuccess = true, Model = users };
         }
 
-        public UserModel? GetById(int id)
+        public Response<UserModel> GetById(int id)
         {
             var user = _context.Users.AsNoTracking().FirstOrDefault(u => u.Id == id);
 
-            return user?.ToDto();
+            if (user is null)
+                return new() { IsSuccess = false, Reason = "No user" };
+            return new() { IsSuccess = true, Model = user.ToDto() };
         }
 
-        public void Update(UserModel model)
+        public Response Update(UserModel model)
         {
-            var user = new User()
-            {
-                Id = model.Id,
-                Email = model.Email,
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                LastLoginData = model.LastLoginData,
-                Password = model.Password,
-                Phone = model.Phone,
-            };
-            _context.Users.Update(user);
+            var userToUpdate = _context.Users.Find(model.Id);
+            if (userToUpdate is null)
+                return new() { IsSuccess = false, Reason = "There is no user" };
+            //userToUpdate.Email = model.Email;
+            userToUpdate.FirstName = model.FirstName;
+            userToUpdate.LastName = model.LastName;
+            userToUpdate.LastLoginData = model.LastLoginData;
+            userToUpdate.Password = model.Password;
+            userToUpdate.Phone = model.Phone;
+            _context.Users.Update(userToUpdate);
             _context.SaveChanges();
-            return;
+            return new() { IsSuccess = true };
         }
 
 
-        public IEnumerable<Project> GetProjectsByUserId(int userId)
+        public  Task<Response<List<Project>>> GetProjectsByUserIdAsync(int userId)
         {
             var projectParticipants = _context
                 .Users
@@ -85,13 +90,41 @@ namespace TaskManager.Api.Services
                 .FirstOrDefault(u => u.Id == userId)
                 .Participants
                 .Distinct()
-                .ToArray();
-            return projectParticipants.Select(p => p.Project).ToList();
+                .ToList();
+            if (projectParticipants.Select(p => p.Project) is null)
+                return Task.FromResult<Response<List<Project>>>( new() { IsSuccess = false, Reason = "Not found project" });
+
+            var response = new Response<List<Project>>()
+            {
+                IsSuccess = true,
+                Model = projectParticipants.Select(p => p.Project).ToList(),
+            };
+            return Task.FromResult(response);
         }
 
-        internal User? GetByEmail(string emailUser)
+        public Task<Response<List<UserModel>>> GetAllAsync()
         {
-            return _context.Users.AsNoTracking().FirstOrDefault(u => u.Email.Equals(emailUser));
+            return Task.FromResult(GetAll());
+        }
+
+        public Task<Response<UserModel>> GetByIdAsync(int id)
+        {
+            return Task.FromResult(GetById(id));
+        }
+
+        public Task<Response<UserModel>> CreateAsync(UserModel model)
+        {
+            return Task.FromResult(Create(model));
+        }
+
+        public Task<Response> UpdateAsync(UserModel model)
+        {
+            return Task.FromResult(Update(model));
+        }
+
+        public Task<Response> DeleteAsync(int id)
+        {
+            return Task.FromResult(Delete(id));
         }
     }
 }

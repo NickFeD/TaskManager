@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using TaskManager.Command.Models.Abstracted;
 
 namespace TaskManager.Api.Controllers.Abstracted
 {
-    public interface ICRUDControllers<TModel>
+    public interface ICRUDController<TModel> where TModel : Model
     {
         [HttpGet]
         public Task<IActionResult> GetAll();
