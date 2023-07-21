@@ -15,9 +15,9 @@ namespace TaskManager.Api.Services
             _httpContext = httpContext;
         }
 
-        public User? GetUser()
+        public User? GetUser(HttpContext httpContext)
         {
-            var identity = _httpContext.User.Identity as ClaimsIdentity;
+            var identity = httpContext.User.Identity as ClaimsIdentity;
             if (identity is null)
                 return null;
             var emailUser = identity.FindFirst(ClaimTypes.Email)?.Value;
@@ -25,5 +25,8 @@ namespace TaskManager.Api.Services
                 return null;
             return _context.Users.FirstOrDefault(u => u.Email.Equals(emailUser));
         }
+
+        public Task<User?> GetUserAsync(HttpContext httpContext)
+            => System.Threading.Tasks.Task.FromResult(GetUser(httpContext));
     }
 }

@@ -7,7 +7,7 @@ using Task = System.Threading.Tasks.Task;
 
 namespace TaskManager.Api.Services
 {
-    public class UserService : ICRUDService<UserModel>,ICRUDServiceAsync<UserModel>
+    public class UserService
     {
         private readonly ApplicationContext _context;
         public UserService(ApplicationContext context) { _context = context; }
@@ -34,13 +34,12 @@ namespace TaskManager.Api.Services
             return new() { IsSuccess = true, Model = model };
         }
 
-        public Response Delete(int id)
+        public Response Delete(User user)
         {
-            var userToDelete = _context.Users.Find(id);
-            if (userToDelete is null)
+            if (user is null)
                 return new() { IsSuccess = false, Reason = "User not found" };
-            var projects = _context.Projects.Where(p => p.CreatorId == id).ToList();
-            _context.Users.Remove(userToDelete);
+            var projects = _context.Projects.Where(p => p.CreatorId == user.Id).ToList();
+            _context.Users.Remove(user);
             _context.SaveChanges();
             return new() { IsSuccess = true };
 
@@ -103,28 +102,18 @@ namespace TaskManager.Api.Services
         }
 
         public Task<Response<List<UserModel>>> GetAllAsync()
-        {
-            return Task.FromResult(GetAll());
-        }
+            =>Task.FromResult(GetAll());
 
         public Task<Response<UserModel>> GetByIdAsync(int id)
-        {
-            return Task.FromResult(GetById(id));
-        }
+            => Task.FromResult(GetById(id));
 
         public Task<Response<UserModel>> CreateAsync(UserModel model)
-        {
-            return Task.FromResult(Create(model));
-        }
+            => Task.FromResult(Create(model));
 
         public Task<Response> UpdateAsync(UserModel model)
-        {
-            return Task.FromResult(Update(model));
-        }
+            => Task.FromResult(Update(model));
 
-        public Task<Response> DeleteAsync(int id)
-        {
-            return Task.FromResult(Delete(id));
-        }
+        public Task<Response> DeleteAsync(User user)
+            => Task.FromResult(Delete(user));
     }
 }

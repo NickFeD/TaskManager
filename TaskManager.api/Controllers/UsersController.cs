@@ -11,7 +11,7 @@ namespace TaskManager.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UsersController : ControllerBase, ICRUDController<UserModel>
+    public class UsersController : ControllerBase
     {
         private readonly UserService _service;
         private readonly HttpContextHandlerService _httpHandler;
@@ -42,36 +42,21 @@ namespace TaskManager.Api.Controllers
         /// <summary>
         /// Deleting a user
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="isConfirmed"></param>
         /// <returns></returns>
         [Authorize]
         [HttpDelete]
         [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(bool isConfirmed)
         {
-            var userToDelete = await _service.GetByIdAsync(id);
-            if (!userToDelete.IsSuccess)
-                return BadRequest(new Response { IsSuccess = false, Reason = userToDelete.Reason });
-            var response = _service.Delete(id);
+            if (!isConfirmed)
+                return BadRequest(new Response { IsSuccess = false, Reason = "Not confirmed" });
+            var userToDelete = await _httpHandler.GetUserAsync(HttpContext);
+            if (userToDelete is null)
+                return BadRequest(new Response { IsSuccess = false, Reason = "Not found" });
+            var response = await _service.DeleteAsync(userToDelete);
             return Ok(response);
-        }
-
-        /// <summary>
-        /// All users
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet]
-        [Authorize]
-        [ProducesResponseType(typeof(Response<List<UserModel>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(Response<List<UserModel>>), StatusCodes.Status400BadRequest)]
-        [ProducesDefaultResponseType]
-        public  async Task<IActionResult> GetAll()
-        {
-            var users = await _service.GetAllAsync();
-            if (!users.IsSuccess)
-                return BadRequest(users);
-            return Ok(users);
         }
 
         /// <summary>
@@ -100,18 +85,13 @@ namespace TaskManager.Api.Controllers
         [HttpPut]
         [Authorize]
         [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Update(int id, UserModel model)
+        [ProducesResponseType(typeof(Response), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Update(UserModel model)
         {
-            var userAuthorize = _httpHandler.GetUser();
-            if (userAuthorize is null)
-                return BadRequest(new Response { IsSuccess = false, Reason ="Not Found User"});
-            if (userAuthorize.Id != id)
-                return BadRequest(new Response { IsSuccess = false, Reason = "Не прикидывайся" });
-            var user = await _service.GetByIdAsync(id);
-            if (!user.IsSuccess)
-                return BadRequest(new Response { IsSuccess = user .IsSuccess, Reason= user.Reason });
-            model.Id = user.Model.Id;
+            var user = await _httpHandler.GetUserAsync(HttpContext);
+            if (user is null)
+                return NotFound(new Response { IsSuccess = false, Reason = "Not Found" });
+            model.Id = user.Id;
             var response = _service.Update(model);
             return Ok(response);
         }
@@ -131,6 +111,22 @@ namespace TaskManager.Api.Controllers
                 return BadRequest(projects);
             var models = projects.Model.Select(u => u.ToDto()).ToList();
             return Ok(models);
+        }
+
+        /// <summary>
+        /// Get information about the user who sent the request
+        /// </summary>
+        /// <returns></returns>
+        [Authorize]
+        [HttpGet("my")]
+        [ProducesResponseType(typeof(Response<UserModel>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response<UserModel>), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetMy()
+        {
+            var user = await _httpHandler.GetUserAsync(HttpContext);
+            if (user is null)
+                return BadRequest(new Response<UserModel> { IsSuccess = false, Reason = "Сould not identify the user" });
+            return Ok(new Response<UserModel> { IsSuccess = true, Model = user.ToDto() });
         }
     }
 }
