@@ -7,12 +7,10 @@ namespace TaskManager.Api.Services
     public class HttpContextHandlerService
     {
         private readonly ApplicationContext _context;
-        private readonly HttpContext _httpContext;
 
-        public HttpContextHandlerService(ApplicationContext context, HttpContext httpContext)
+        public HttpContextHandlerService(ApplicationContext context)
         {
             _context = context;
-            _httpContext = httpContext;
         }
 
         public User? GetUser(HttpContext httpContext)

@@ -2,6 +2,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using TaskManager.Api.Data;
 using TaskManager.Api.Entity;
+using TaskManager.Api.Services;
 using TaskManager.Api.Services.Abstracted;
 using TaskManager.Command.Models;
 using RouteAttribute = Microsoft.AspNetCore.Components.RouteAttribute;
@@ -13,11 +14,13 @@ namespace TaskManager.Api.Controllers
     public class AccountController : ControllerBase
     {
         private readonly IJwtServices _jwtServices;
+        private readonly UserService _userService;
         private readonly ApplicationContext _context;
 
         public AccountController(IJwtServices jwtServices, ApplicationContext context)
         {
             _jwtServices = jwtServices;
+            _userService = new(context);
             _context = context;
         }
 
@@ -69,6 +72,20 @@ namespace TaskManager.Api.Controllers
             var email = token.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Email).Value;
             var authResponse = await _jwtServices.GetRefreshTokenAsync(ipAddress, userRefreshToken.UserId, email);
             return Ok(authResponse);
+        }
+
+        [HttpPost("[action]")]
+        [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Registration(UserModel model)
+        {
+            if (model is null)
+                return BadRequest(new AuthResponse { IsSuccess = false, Reason = "You didn't send anything" });
+            var modelToCreate = await _userService.CreateAsync(model);
+            if (!modelToCreate.IsSuccess)
+                return BadRequest(new AuthResponse { IsSuccess = false, Reason = modelToCreate.Reason });
+            var auth = await AuthToken(new() { Email = model.Email, Password = model.Password });
+            return Ok(auth);
         }
 
         private AuthResponse ValidateDetails(JwtSecurityToken token, UserRefreshToken? userRefreshToken)
