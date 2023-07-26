@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TaskManager.Api", "TaskMana
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TaskManager.ClientSDK", "TaskManager.ClientSDK\TaskManager.ClientSDK.csproj", "{8A0E6A92-54B8-4E28-9A12-CDB57402DF67}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskManager.Client.Console", "TaskManager.Client.Console\TaskManager.Client.Console.csproj", "{E19CBE5D-BA0A-41E2-AA10-1B17AF5FBF81}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TaskManager.Client.Console", "TaskManager.Client.Console\TaskManager.Client.Console.csproj", "{E19CBE5D-BA0A-41E2-AA10-1B17AF5FBF81}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskManager.Api.Test", "TaskManager.Api.Test\TaskManager.Api.Test.csproj", "{D0A9B21A-8221-464F-8DA6-ED55C26706CC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{E19CBE5D-BA0A-41E2-AA10-1B17AF5FBF81}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E19CBE5D-BA0A-41E2-AA10-1B17AF5FBF81}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E19CBE5D-BA0A-41E2-AA10-1B17AF5FBF81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0A9B21A-8221-464F-8DA6-ED55C26706CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0A9B21A-8221-464F-8DA6-ED55C26706CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0A9B21A-8221-464F-8DA6-ED55C26706CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0A9B21A-8221-464F-8DA6-ED55C26706CC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

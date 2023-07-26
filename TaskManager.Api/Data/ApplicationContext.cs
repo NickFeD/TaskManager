@@ -12,7 +12,7 @@ namespace TaskManager.Api.Data
 
         public DbSet<User> Users =>Set<User>();
         public DbSet<UserRefreshToken> UserRefreshTokens =>Set<UserRefreshToken>();
-        public DbSet<UserRole> Roles =>Set<UserRole>();
+        public DbSet<Role> Roles =>Set<Role>();
         public DbSet<Project> Projects =>Set<Project>();
         public DbSet<Desk> Desks =>Set<Desk>();
         public DbSet<Entity.Task> Tasks =>Set<Entity.Task>();

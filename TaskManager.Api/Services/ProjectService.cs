@@ -16,13 +16,33 @@ namespace TaskManager.Api.Services
         {
             var project = new Project()
             {
-                CreationData = DateTime.UtcNow,
-                CreatorId = model.CreatorId,
-                Description = model.Description,
                 Name = model.Name,
                 Status = model.Status,
+                CreatorId = model.CreatorId,
+                CreationData = DateTime.UtcNow,
+                Description = model.Description,
             };
             _context.Projects.Add(project);
+            
+
+            var role = new Role()
+            {
+                Name = "Admin",
+                Project = project,
+                AllowedAddUsersProject = true,
+                AllowedDeleteProject = true,
+                AllowedEditProject = true,
+
+            };
+            _context.Roles.Add(role);
+
+            var participant = new ProjectParticipant()
+            {
+                Role = role,
+                Project = project,
+                UserId = project.CreatorId ?? 0,
+            };
+            _context.Participants.Add(participant);
             _context.SaveChanges();
             model.Id = project.Id;
             return new() { IsSuccess = true, Model = model };
@@ -80,5 +100,34 @@ namespace TaskManager.Api.Services
 
         public Task<Response> UpdateAsync(ProjectModel model)
             => Task.FromResult(Update(model));
+
+        public async Task<Response> AddUsers(int projectId, int[] usersId)
+        {
+            var participants = new ProjectParticipant[usersId.Length];
+            for (int i = 0; i < usersId.Length; i++)
+            {
+                var participant = new ProjectParticipant()
+                {
+                    UserId = usersId[i],
+                    ProjectId = projectId,
+                };
+                participants[i] = participant;
+            }
+            _context.AddRange(participants);
+            await _context.SaveChangesAsync();
+            return new() { IsSuccess = true };
+        }
+        public Task<Response<List<UserRoleModel>>> GetUsers(int projectId)
+        {
+            var participants = _context.Participants.AsNoTracking().Include(p => p.Role).Include(p => p.User).Where(p=>p.ProjectId.Equals(projectId)).ToList();
+            if (participants is null)
+                return Task.FromResult( new Response<List<UserRoleModel>>() { IsSuccess= false, Reason="Not Found" });
+            List<UserRoleModel> users = new();
+            for (int i = 0; i < participants.Count; i++)
+            {
+                users.Add(new() { Role = participants[i].Role.ToDto(), User = participants[i].User.ToDto() });
+            }
+            return Task.FromResult( new Response<List<UserRoleModel>>() { IsSuccess = true, Model = users });
+        }
     }
 }

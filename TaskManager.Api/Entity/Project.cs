@@ -21,7 +21,7 @@ namespace TaskManager.Api.Entity
         public User? Creator { get; set; }
 
         public List<ProjectParticipant> Participants { get; set; } = new();
-        public List<UserRole>? UserRoles { get; set; } = new();
+        public List<Role>? Roles { get; set; } = new();
         public List<Desk>? Desks { get; set; } = new();
 
         public ProjectModel ToDto() => new()

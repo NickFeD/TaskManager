@@ -27,7 +27,7 @@ namespace TaskManager.Api.Entity
         public int? UserRoleId { get; set; }
 
         [ForeignKey(nameof(UserRoleId))]
-        public UserRole? Role { get; set; }
+        public Role? Role { get; set; }
 
         public ProjectParticipantModel ToDto()
         {

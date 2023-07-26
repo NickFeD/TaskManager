@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TaskManager.Api.Data;
+using TaskManager.Api.Services;
 
 namespace TaskManager.Api.Controllers
 {
@@ -9,11 +10,13 @@ namespace TaskManager.Api.Controllers
     [ApiController]
     public class TestsController : ControllerBase
     {
-        Initialization initialization;
+        private readonly Initialization initialization;
+        private readonly HttpContextHandlerService _httpHandler;
 
         public TestsController(ApplicationContext context)
         {
             initialization = new Initialization(context);
+            _httpHandler = new(context);
         }
 
         [HttpGet]

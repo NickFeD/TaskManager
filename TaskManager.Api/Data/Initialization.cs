@@ -109,16 +109,16 @@ namespace TaskManager.Api.Data
         public List<ProjectParticipant> InitializationParticipants(int numParticipants)
         {
             List<ProjectParticipant> participants = new ();
-            List<Project> projects = _context.Projects.Include(p=> p.UserRoles).ToList();
+            List<Project> projects = _context.Projects.Include(p=> p.Roles).ToList();
             List<User > users = _context.Users.ToList();
 
             for (int i = 0; i < numParticipants; i++)
             {
                 var project = projects[Faker.RandomNumber.Next(projects.Count - 1)];
                 var usersTemp = users[Faker.RandomNumber.Next(users.Count - 1)];
-                UserRole role = null;
-                if (project.UserRoles.Count !=0)
-                    role = project.UserRoles[Faker.RandomNumber.Next(project.UserRoles.Count - 1)];
+                Role role = null;
+                if (project.Roles.Count !=0)
+                    role = project.Roles[Faker.RandomNumber.Next(project.Roles.Count - 1)];
                 ProjectParticipant participant = new()
                 {
                     Project = project,
@@ -130,14 +130,14 @@ namespace TaskManager.Api.Data
             return participants;
         }
 
-        public List<UserRole> InitializationRoles(int numRoles)
+        public List<Role> InitializationRoles(int numRoles)
         {
             List<Project> projects = _context.Projects.ToList();
-            List<UserRole> roles = new List<UserRole>();
+            List<Role> roles = new List<Role>();
 
             for (int i = 0; i < numRoles; i++)
             {
-                UserRole role = new()
+                Role role = new()
                 {
                     Name = Faker.Company.Suffix(),
                     Project = projects[Faker.RandomNumber.Next(projects.Count - 1)],
