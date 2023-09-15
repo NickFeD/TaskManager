@@ -16,7 +16,7 @@ namespace TaskManager.Api.Services
     {
         private readonly ApplicationContext _context;
         private readonly IConfiguration _configuration;
-        private readonly DateTime _expiresToken = DateTime.UtcNow.AddHours(4);
+        private readonly DateTime _expiresToken = DateTime.UtcNow.AddMinutes(1);
         private readonly DateTime _expiresRefreshToken = DateTime.UtcNow.AddMonths(2);
 
         public JwtServices(ApplicationContext context, IConfiguration configuration)
@@ -26,7 +26,7 @@ namespace TaskManager.Api.Services
         }
 
         #region Public Metod
-        public async Task<AuthResponse> GetRefreshTokenAsync(string ipAddress, int userId, string email)
+        public async Task<Response<AuthResponse>> GetRefreshTokenAsync(string ipAddress, int userId, string email)
         {
             var refreshToken = GenerateRefreshToken();
             var accessToken = GenerateToken(email);
@@ -34,7 +34,7 @@ namespace TaskManager.Api.Services
             return await SaveTokenDetails(ipAddress, userId, accessToken, refreshToken);
         }
 
-        public async Task<AuthResponse?> GetTokenAsync(AuthRequest authRequest, string ipAddress)
+        public async Task<Response<AuthResponse>?> GetTokenAsync(AuthRequest authRequest, string ipAddress)
         {
             var user = _context.Users.AsNoTracking()
                 .FirstOrDefault(u => u.Email.Equals(authRequest.Email)
@@ -55,7 +55,7 @@ namespace TaskManager.Api.Services
         #endregion
 
         #region Private Metod
-        private async Task<AuthResponse> SaveTokenDetails(string ipAddress, int userId, string tokenString, string refreshTokenString)
+        private async Task<Response<AuthResponse>> SaveTokenDetails(string ipAddress, int userId, string tokenString, string refreshTokenString)
         {
             var refreshToken = _context.UserRefreshTokens.FirstOrDefault(x => x.IpAddress == ipAddress && x.UserId == userId);
             if (refreshToken is null)
@@ -75,13 +75,16 @@ namespace TaskManager.Api.Services
 
             await _context.SaveChangesAsync();
 
-            return new AuthResponse
+            return new Response<AuthResponse>
             {
-                Token = tokenString,
-                RefreshToken = refreshTokenString,
                 IsSuccess = true,
-                ExpiresRefreshToken = _expiresRefreshToken,
-                ExpiresToken = _expiresToken,
+                Model = new AuthResponse
+                {
+                    Token = tokenString,
+                    RefreshToken = refreshTokenString,
+                    ExpiresRefreshToken = _expiresRefreshToken,
+                    ExpiresToken = _expiresToken,
+                },
             };
         }
 

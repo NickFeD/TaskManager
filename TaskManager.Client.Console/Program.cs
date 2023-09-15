@@ -5,33 +5,14 @@ Console.WriteLine("client create");
 var client  = new Client("https://localhost:44329", new HttpClient(),new());
 
 Console.WriteLine("client completed");
+var temp1 = await client.Account.AuthToken(new TaskManager.Command.Models.AuthRequest { Email = "string",Password ="string"});
+Console.WriteLine(temp1.ExpiresToken.ToLocalTime());
 Console.ReadLine();
-
-Console.WriteLine("Users.GetAllAsync()");
-Console.WriteLine(client.Users.GetAllAsync().Result);
-
-Console.WriteLine("client.Users.GetByUserId(3)");
-Console.WriteLine(client.Users.GetByUserId(3));
-
-Console.WriteLine("client.Users.CreateAsync(user)");
-var user = new UserModel()
+for (int i = 0;; i++)
 {
-    FirstName = "FirstName",
-    LastName = "LastName",
-    Email = "Email",
-    LastLoginData = DateTime.Now,
-    Password = "password",
-    Phone = "phone",
-};
-Console.WriteLine(client.Users.CreateAsync(user));
+    var temp = await client.My.GetMy();
+    Console.WriteLine(temp.FirstName);
+    await Task.Delay(500);
+}
 
-Console.WriteLine("client.Users.UpdateAsync(2,user)");
-
-user.FirstName = "name";
-Console.WriteLine(client.Users.UpdateAsync(2,user));
-
-Console.WriteLine("client.Users.DeleteAsync(3)");
-Console.WriteLine(client.Users.DeleteAsync(3));
-
-Console.WriteLine(client.Users.GetByUserId(3));
-Console.WriteLine(client.Users.GetByUserId(3));
+Console.WriteLine("stop");

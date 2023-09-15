@@ -7,7 +7,7 @@ namespace TaskManager.Api.Data
     {
         public ApplicationContext( DbContextOptions<ApplicationContext> options): base(options) 
         {
-            Database.EnsureCreated();
+            Database.Migrate();
         }
 
         public DbSet<User> Users =>Set<User>();

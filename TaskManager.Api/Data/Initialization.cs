@@ -116,9 +116,13 @@ namespace TaskManager.Api.Data
             {
                 var project = projects[Faker.RandomNumber.Next(projects.Count - 1)];
                 var usersTemp = users[Faker.RandomNumber.Next(users.Count - 1)];
+#pragma warning disable CS8600 // Преобразование литерала, допускающего значение NULL или возможного значения NULL в тип, не допускающий значение NULL.
                 Role role = null;
+#pragma warning restore CS8600 // Преобразование литерала, допускающего значение NULL или возможного значения NULL в тип, не допускающий значение NULL.
+#pragma warning disable CS8602 // Разыменование вероятной пустой ссылки.
                 if (project.Roles.Count !=0)
                     role = project.Roles[Faker.RandomNumber.Next(project.Roles.Count - 1)];
+#pragma warning restore CS8602 // Разыменование вероятной пустой ссылки.
                 ProjectParticipant participant = new()
                 {
                     Project = project,

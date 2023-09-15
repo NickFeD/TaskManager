@@ -81,6 +81,9 @@ namespace TaskManager.Api.Services
 
         public  Task<Response<List<Project>>> GetProjectsByUserIdAsync(int userId)
         {
+#pragma warning disable CS8602 // Разыменование вероятной пустой ссылки.
+#pragma warning disable CS8604 // Возможно, аргумент-ссылка, допускающий значение NULL.
+#pragma warning disable CS8620 // Аргумент запрещено использовать для параметра из-за различий в отношении допустимости значений NULL для ссылочных типов.
             var projectParticipants = _context
                 .Users
                 .AsNoTracking()
@@ -90,6 +93,9 @@ namespace TaskManager.Api.Services
                 .Participants
                 .Distinct()
                 .ToList();
+#pragma warning restore CS8620 // Аргумент запрещено использовать для параметра из-за различий в отношении допустимости значений NULL для ссылочных типов.
+#pragma warning restore CS8604 // Возможно, аргумент-ссылка, допускающий значение NULL.
+#pragma warning restore CS8602 // Разыменование вероятной пустой ссылки.
             if (projectParticipants.Select(p => p.Project) is null)
                 return Task.FromResult<Response<List<Project>>>( new() { IsSuccess = false, Reason = "Not found project" });
 

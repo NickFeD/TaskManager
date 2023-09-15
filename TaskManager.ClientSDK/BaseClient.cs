@@ -1,12 +1,58 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using TaskManager.Command.Models;
 
 namespace TaskManager.ClientSDK
 {
+    public abstract class BaseClient
+    {
+        public BaseClient(string baseUrl, HttpClient httpClient, CancellationToken cancellationToken)
+        {
+            _cancellationToken = cancellationToken;
+            _baseUrl = baseUrl+"/";
+            _httpClient = httpClient;
+            _accountClient = new(_baseUrl,_httpClient,_cancellationToken);
+        }
+        protected readonly string _baseUrl;
+
+        protected readonly HttpClient _httpClient;
+        protected readonly AccountClient _accountClient;
+
+        protected readonly CancellationToken _cancellationToken;
+
+        //Скорей всего надо до писать
+        protected virtual Task<bool> ResponseAsync(HttpResponseMessage httpResponse)
+        {
+            if (httpResponse.IsSuccessStatusCode)
+                return Task.FromResult(true);
+            return Task.FromResult(false);
+        }
+        protected virtual async Task<T?> ResponseAsync<T>(HttpResponseMessage httpResponse) where T : class
+        {
+            if (httpResponse.IsSuccessStatusCode)
+            {
+                return await httpResponse.Content.ReadFromJsonAsync<T>(cancellationToken: _cancellationToken);
+            }
+            var content = httpResponse.Content.ReadAsStringAsync();
+            switch (httpResponse.StatusCode)
+            {
+                case System.Net.HttpStatusCode.Unauthorized:
+                        var response = await _accountClient.RefreshToken(new RefreshTokenRequest { ExpiredToken = UserTokens.AuthResponse.Token,RefreshToken = UserTokens.AuthResponse.RefreshToken });
+                    if (response)
+                        return await httpResponse.Content.ReadFromJsonAsync<T>(cancellationToken: _cancellationToken);
+                    break;
+                default:
+                    break;
+            }
+            return null;
+        }
+    }
     public abstract class BaseClient<TModel> where TModel : class
     {
         protected readonly string _baseUrl;
@@ -46,7 +92,7 @@ namespace TaskManager.ClientSDK
             return _httpClient.DeleteAsync(_baseUrl + $"/{id}", cancellationToken: _cancellationToken);
         }
 
-        protected Task<T?> ResponseAsync<T>(HttpResponseMessage httpResponse) where T : class
+        protected virtual Task<T?> ResponseAsync<T>(HttpResponseMessage httpResponse) where T : class
         {
             T? result = null;
             if (!httpResponse.IsSuccessStatusCode)

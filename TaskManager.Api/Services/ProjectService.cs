@@ -125,7 +125,9 @@ namespace TaskManager.Api.Services
             List<UserRoleModel> users = new();
             for (int i = 0; i < participants.Count; i++)
             {
+#pragma warning disable CS8602 // Разыменование вероятной пустой ссылки.
                 users.Add(new() { Role = participants[i].Role.ToDto(), User = participants[i].User.ToDto() });
+#pragma warning restore CS8602 // Разыменование вероятной пустой ссылки.
             }
             return Task.FromResult( new Response<List<UserRoleModel>>() { IsSuccess = true, Model = users });
         }

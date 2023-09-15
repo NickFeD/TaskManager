@@ -15,9 +15,7 @@ namespace TaskManager.Command.Models
         {
         }
 
-        [Required]
-        public string ExpiredToken { get; set; }
-        [Required]
-        public string RefreshToken { get; set; }
+        public required string ExpiredToken { get; set; }
+        public required string RefreshToken { get; set; }
     }
 }

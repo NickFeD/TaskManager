@@ -14,9 +14,13 @@ namespace TaskManager.ClientSDK
         private HttpClient _httpClient;
 
         public UsersClient Users { get; set; }
+        public AccountClient Account { get; set; }
+        public MyClient My { get; set; }
         public Client(string baseUrl, System.Net.Http.HttpClient httpClient, CancellationToken cancellationToken)
         {
-            Users = new UsersClient(baseUrl,httpClient,cancellationToken);
+            Users = new (baseUrl,httpClient,cancellationToken);
+            Account = new (baseUrl,httpClient,cancellationToken);
+            My = new (baseUrl,httpClient,cancellationToken);
             _baseUrl = baseUrl;
             _httpClient = httpClient;
             //_settings = new System.Lazy<System.Text.Json.JsonSerializerOptions>(CreateSerializerSettings);

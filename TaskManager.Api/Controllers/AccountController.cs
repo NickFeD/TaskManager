@@ -5,12 +5,12 @@ using TaskManager.Api.Entity;
 using TaskManager.Api.Services;
 using TaskManager.Api.Services.Abstracted;
 using TaskManager.Command.Models;
-using RouteAttribute = Microsoft.AspNetCore.Components.RouteAttribute;
+using Microsoft.AspNetCore.Http;
 
 namespace TaskManager.Api.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class AccountController : ControllerBase
     {
         private readonly IJwtServices _jwtServices;
@@ -31,16 +31,17 @@ namespace TaskManager.Api.Controllers
         /// <returns></returns>
         [HttpPost("[action]")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesDefaultResponseType(typeof(string))]
         public async Task<IActionResult> AuthToken([FromBody] AuthRequest authRequest)
         {
             if (!ModelState.IsValid)
-                return BadRequest(new AuthResponse { IsSuccess = false, Reason = "Email and password most by provided." });
+                return BadRequest("Email and password most by provided.");
+#pragma warning disable CS8602 // Разыменование вероятной пустой ссылки.
             var authResponse = await _jwtServices.GetTokenAsync(authRequest, HttpContext.Connection.RemoteIpAddress.ToString());
+#pragma warning restore CS8602 // Разыменование вероятной пустой ссылки.
             if (authResponse is null)
-                return Unauthorized(new AuthResponse { IsSuccess = false, Reason = "The email or password is incorrect" });
-            return Ok(authResponse);
+                return Unauthorized("The email or password is incorrect");
+            return Ok(authResponse.Model);
         }
 
         /// <summary>
@@ -49,54 +50,62 @@ namespace TaskManager.Api.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost("[action]")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+        [ProducesDefaultResponseType(typeof(string))]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
         {
             if (!ModelState.IsValid)
-                return BadRequest(new AuthResponse { IsSuccess = false, Reason = "Tokens must by provided." });
+                return BadRequest("Tokens must by provided.");
             var token = GetJwtToken(request.ExpiredToken);
-            var ipAddress = HttpContext.Connection.RemoteIpAddress.ToString();
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+            if (ipAddress is null)
+                return BadRequest("Your ip could not be determined");
             var userRefreshToken = _context.UserRefreshTokens.FirstOrDefault(
                 x => x.IsInvalidated == false && x.Token == request.ExpiredToken
                 && x.RefreshToken == request.RefreshToken
                 && x.IpAddress == ipAddress);
-            AuthResponse response = ValidateDetails(token, userRefreshToken);
-            if (!response.IsSuccess)
-                return BadRequest(response);
+            if (userRefreshToken is null)
+                return BadRequest("ERROR");
 
+            Response<AuthResponse> response = ValidateDetails(token, userRefreshToken);
+            if (!response.IsSuccess)
+                return BadRequest(response.Reason);
             userRefreshToken.IsInvalidated = true;
             _context.UserRefreshTokens.Update(userRefreshToken);
             await _context.SaveChangesAsync();
 
-            var email = token.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Email).Value;
+            var email = token.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Email)?.Value;
+            if (email is null)
+                return BadRequest("The token is damaged");
+
             var authResponse = await _jwtServices.GetRefreshTokenAsync(ipAddress, userRefreshToken.UserId, email);
-            return Ok(authResponse);
+            if (!authResponse.IsSuccess)
+                return BadRequest(authResponse.Reason);
+            return Ok(authResponse.Model);
         }
 
         [HttpPost("[action]")]
-        [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+        [ProducesDefaultResponseType(typeof(string))]
         public async Task<IActionResult> Registration(UserModel model)
         {
             if (model is null)
-                return BadRequest(new AuthResponse { IsSuccess = false, Reason = "You didn't send anything" });
+                return BadRequest("You didn't send anything");
             var modelToCreate = await _userService.CreateAsync(model);
             if (!modelToCreate.IsSuccess)
-                return BadRequest(new AuthResponse { IsSuccess = false, Reason = modelToCreate.Reason });
-            var auth = await AuthToken(new() { Email = model.Email, Password = model.Password });
-            return Ok(auth);
+                return BadRequest(modelToCreate.Reason);
+            return await AuthToken(new() { Email = model.Email, Password = model.Password });
         }
 
-        private AuthResponse ValidateDetails(JwtSecurityToken token, UserRefreshToken? userRefreshToken)
+        private Response<AuthResponse> ValidateDetails(JwtSecurityToken token, UserRefreshToken? userRefreshToken)
         {
             if (userRefreshToken is null)
-                return new AuthResponse { IsSuccess = false, Reason = "Invalid token details." };
+                return new Response<AuthResponse> { IsSuccess = false, Reason = "Invalid token details." };
             if (token.ValidTo > DateTime.UtcNow)
-                return new AuthResponse { IsSuccess = false, Reason = "Token not expired." };
+                return new Response<AuthResponse> { IsSuccess = false, Reason = "Token not expired." };
             if (!userRefreshToken.IsActive)
-                return new AuthResponse { IsSuccess = false, Reason = "Refresh Token expired." };
-            return new AuthResponse { IsSuccess = true, };
+                return new Response<AuthResponse> { IsSuccess = false, Reason = "Refresh Token expired." };
+            return new Response<AuthResponse> { IsSuccess = true, };
         }
 
         private JwtSecurityToken GetJwtToken(string expiredToken)

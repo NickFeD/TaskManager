@@ -10,23 +10,25 @@ namespace TaskManager.Api.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class ParticipantsController : ControllerBase, ICRUDController<ProjectParticipantModel>
+    public class DeskController : ControllerBase, ICRUDController<DeskModel>
     {
-        private readonly ParticipantService _service;
-        public ParticipantsController(ApplicationContext context) { _service = new(context); }
-
+        private readonly DeskService _service;
+        public DeskController(ApplicationContext context)
+        {
+            _service = new(context);
+        }
         /// <summary>
-        /// Create a participant
+        /// Create a desk
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
-        [ProducesResponseType(typeof(Response<ProjectParticipantModel>), StatusCodes.Status201Created)]
-        [ProducesResponseType(typeof(Response<ProjectParticipantModel>), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Create([FromBody] ProjectParticipantModel model)
+        [ProducesResponseType(typeof(Response<DeskModel>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(Response<DeskModel>), StatusCodes.Status201Created)]
+        public async Task<IActionResult> Create([FromBody] DeskModel model)
         {
             if (model is null)
-                return BadRequest(new Response<ProjectModel> { IsSuccess = false, Reason = "Request null" });
+                return BadRequest(new Response<DeskModel> { IsSuccess = false, Reason = "You didn't send anything" });
             var modelToCreate = await _service.CreateAsync(model);
             if (!modelToCreate.IsSuccess)
                 return BadRequest(modelToCreate);
@@ -34,56 +36,55 @@ namespace TaskManager.Api.Controllers
         }
 
         /// <summary>
-        /// Delete a participant
+        /// Delete a desk
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete]
-        [ProducesDefaultResponseType]
         [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Delete(int id)
         {
-            var participant = await _service.GetByIdAsync(id);
-            if (!participant.IsSuccess)
-                return BadRequest(participant);
-            _service.Delete(id);
-            return Ok(participant);
-        }
-
-        /// <summary>
-        /// Get all participants
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet]
-        [ProducesResponseType(typeof(Response<List<ProjectParticipantModel>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(Response<List<ProjectParticipantModel>>), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetAll()
-        {
-            var response = await _service.GetAllAsync();
-            if (!response.IsSuccess)
-                return BadRequest(response);
+            var deskToDelete = await _service.GetByIdAsync(id);
+            if (!deskToDelete.IsSuccess)
+                return BadRequest(new Response { IsSuccess = false, Reason = deskToDelete.Reason });
+            var response = _service.Delete(id);
             return Ok(response);
         }
 
         /// <summary>
-        /// Get a participant by id
+        /// Get all desks
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [ProducesResponseType(typeof(Response<List<DeskModel>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response<List<DeskModel>>), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetAll()
+        {
+            var desks = await _service.GetAllAsync();
+            if (!desks.IsSuccess)
+                return BadRequest(desks);
+            return Ok(desks);
+        }
+
+        /// <summary>
+        /// Get a desk by id
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(Response<ProjectModel>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(Response<ProjectModel>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(Response<DeskModel>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response<DeskModel>), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetById(int id)
         {
-            var response = await _service.GetByIdAsync(id);
-            if (!response.IsSuccess)
-                return BadRequest(response);
-            return Ok(response);
+            var desk = await _service.GetByIdAsync(id);
+            if (!desk.IsSuccess)
+                return BadRequest(desk);
+            return Ok(desk);
         }
 
         /// <summary>
-        /// Update the participant
+        /// Update the desk
         /// </summary>
         /// <param name="id"></param>
         /// <param name="model"></param>
@@ -91,7 +92,7 @@ namespace TaskManager.Api.Controllers
         [HttpPut]
         [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Update(int id, ProjectParticipantModel model)
+        public async Task<IActionResult> Update(int id, DeskModel model)
         {
             var response = await _service.UpdateAsync(model);
             if (!response.IsSuccess)

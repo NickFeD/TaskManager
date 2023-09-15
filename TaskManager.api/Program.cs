@@ -8,6 +8,10 @@ namespace TaskManager.Api
         }
         public static IHostBuilder CreateHostBuilder(string[] args) =>
         Host.CreateDefaultBuilder(args)
+        .ConfigureAppConfiguration((ctx, bld) =>
+        {
+            bld.AddJsonFile("secret.json");
+        })
         .ConfigureWebHostDefaults(webBuilder =>
         {
             webBuilder.UseStartup<Startup>();

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using TaskManager.Api.Data;
 using TaskManager.Api.Services;
 using TaskManager.Command.Models;
@@ -32,8 +33,8 @@ namespace TaskManager.Api.Controllers
         {
             var user = await _httpHandler.GetUserAsync(HttpContext);
             if (user is null)
-                return BadRequest(new Response<UserModel> { IsSuccess = false, Reason = "Сould not identify the user" });
-            return Ok(new Response<UserModel> { IsSuccess = true, Model = user.ToDto() });
+                return BadRequest("Сould not identify the user" );
+            return Ok(user.ToDto());
         }
 
         /// <summary>
@@ -73,12 +74,15 @@ namespace TaskManager.Api.Controllers
             return Ok(response);
         }
 
-            /// <summary>
+            
+#pragma warning disable CS1572 // Комментарий XML содержит тег param, но параметр с таким именем не существует
+/// <summary>
         /// Get a project by user id
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
         [HttpGet("projects")]
+#pragma warning restore CS1572 // Комментарий XML содержит тег param, но параметр с таким именем не существует
         [ProducesResponseType(typeof(Response<List<ProjectModel>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(Response<List<ProjectModel>>), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetMyProject()

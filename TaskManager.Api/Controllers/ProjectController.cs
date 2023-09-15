@@ -13,13 +13,13 @@ namespace TaskManager.Api.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class ProjectsController : ControllerBase
+    public class ProjectController : ControllerBase
     {
         private readonly ProjectService _service;
         private readonly RoleService _roleService;
         private readonly HttpContextHandlerService _httpHandler;
 
-        public ProjectsController(ApplicationContext context) 
+        public ProjectController(ApplicationContext context) 
         { 
             _service = new(context);
             _httpHandler = new(context);
@@ -58,9 +58,11 @@ namespace TaskManager.Api.Controllers
         {
             if (!IsValidate(_httpHandler.GetUserRoleAsNoTracking(HttpContext, id)?.AllowedDeleteProject))
                 return BadRequest(new Response { IsSuccess = false, Reason = "no access" });
+
             var project = await _service.GetByIdAsync(id);
             if (!project.IsSuccess)
                 return BadRequest(project);
+
             _service.Delete(id);
             return Ok(project);
         }
@@ -101,18 +103,18 @@ namespace TaskManager.Api.Controllers
         }
 
 
-        [HttpPost("/{projectId}/Users")]
+        [HttpPost("{id}/Users")]
         [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AddUsers(int projectId, int[] usersId)
+        public async Task<IActionResult> AddUsers(int id, int[] usersId)
         {
-            var response = await _service.AddUsers(projectId, usersId);
+            var response = await _service.AddUsers(id, usersId);
             if (!response.IsSuccess)
                 return BadRequest(response);
             return Ok(response);
         }
 
-        [HttpGet("/{id}/Users")]
+        [HttpGet("{id}/Users")]
         [ProducesResponseType(typeof(Response<List<UserRoleModel>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(Response<List<UserRoleModel>>), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetUsers(int id)

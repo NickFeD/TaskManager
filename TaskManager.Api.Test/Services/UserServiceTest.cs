@@ -5,12 +5,3 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TaskManager.Api.Test.Services
-{
-    [TestClass]
-    internal class UserServiceTest
-    {
-
-        [TestMethod]
-    }
-}
