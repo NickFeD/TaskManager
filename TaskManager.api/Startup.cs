@@ -89,17 +89,11 @@ namespace TaskManager.Api
                     jwtOptions.Events = new JwtBearerEvents();
                     jwtOptions.Events.OnTokenValidated = async (context) =>
                     {
-#pragma warning disable CS8602 // Разыменование вероятной пустой ссылки.
                         var ipAddress = context.Request.HttpContext.Connection.RemoteIpAddress.ToString();
-#pragma warning restore CS8602 // Разыменование вероятной пустой ссылки.
                         var jwtService = context.Request.HttpContext.RequestServices.GetService<IJwtServices>();
                         var jwtToken = context.SecurityToken as JwtSecurityToken;
-#pragma warning disable CS8602 // Разыменование вероятной пустой ссылки.
-#pragma warning disable CS8602 // Разыменование вероятной пустой ссылки.
                         if (!await jwtService.IsTokenValid(jwtToken.RawData, ipAddress))
                             context.Fail("Invalid token details.");
-#pragma warning restore CS8602 // Разыменование вероятной пустой ссылки.
-#pragma warning restore CS8602 // Разыменование вероятной пустой ссылки.
 
                     };
                 });

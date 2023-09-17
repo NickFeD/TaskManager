@@ -11,7 +11,7 @@
 //{
 //    public class ProjectClient : BaseClient
 //    {
-//        public ProjectClient(string baseUrl, HttpClient httpClient, CancellationToken cancellationToken) : base(baseUrl+ "/api/project", httpClient, cancellationToken)
+//        public ProjectClient(string baseUrl, HttpClient httpClient, CancellationToken cancellationToken) : base(baseUrl + "/api/project", httpClient, cancellationToken)
 //        {
 //        }
 
@@ -23,14 +23,14 @@
 //        }
 //        public Task<Response?> Delete(int id)
 //        {
-//            string url = _baseUrl+id;
-//            return _httpClient.DeleteFromJsonAsync<Response>(url,cancellationToken: _cancellationToken);
+//            string url = _baseUrl + id;
+//            return _httpClient.DeleteFromJsonAsync<Response>(url, cancellationToken: _cancellationToken);
 //        }
 
 //        public Task<Response<ProjectModel>?> GetById(int id)
 //        {
 //            string url = _baseUrl + id;
-//            return _httpClient.GetFromJsonAsync<Response<ProjectModel>>(url,cancellationToken:_cancellationToken);
+//            return _httpClient.GetFromJsonAsync<Response<ProjectModel>>(url, cancellationToken: _cancellationToken);
 //        }
 
 //        public async Task<Response?> Edit(int id, ProjectModel model)
@@ -49,7 +49,7 @@
 //        public Task<Response<List<UserRoleModel>>?> GetUsers(int id)
 //        {
 //            string url = _baseUrl + id + "/Users";
-//            return _httpClient.GetFromJsonAsync< Response<List<UserRoleModel>>>(url, cancellationToken: _cancellationToken);
+//            return _httpClient.GetFromJsonAsync<Response<List<UserRoleModel>>>(url, cancellationToken: _cancellationToken);
 //        }
 //    }
 //}

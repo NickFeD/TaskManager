@@ -15,26 +15,36 @@ namespace TaskManager.ClientSDK
         public BaseClient(string baseUrl, HttpClient httpClient, CancellationToken cancellationToken)
         {
             _cancellationToken = cancellationToken;
-            _baseUrl = baseUrl+"/";
             _httpClient = httpClient;
-            _accountClient = new(_baseUrl,_httpClient,_cancellationToken);
+            _httpClient.BaseAddress=  new(baseUrl);
         }
-        protected readonly string _baseUrl;
 
         protected readonly HttpClient _httpClient;
-        protected readonly AccountClient _accountClient;
 
         protected readonly CancellationToken _cancellationToken;
 
         //Скорей всего надо до писать
-        protected virtual Task<bool> ResponseAsync(HttpResponseMessage httpResponse)
+        protected virtual async Task<bool> ResponseAsync(Func<Task<HttpResponseMessage>> func)
         {
+            var httpResponse = await func();
             if (httpResponse.IsSuccessStatusCode)
-                return Task.FromResult(true);
-            return Task.FromResult(false);
+                return true;
+            switch (httpResponse.StatusCode)
+            {
+                case System.Net.HttpStatusCode.Unauthorized:
+                    var response = await AccountClient.RefreshToken(_httpClient,
+                        new RefreshTokenRequest { ExpiredToken = UserTokens.AuthResponse.Token, RefreshToken = UserTokens.AuthResponse.RefreshToken },
+                        _cancellationToken);
+                    return await ResponseAsync(func);
+                default:
+                    break;
+            }
+            return false;
         }
-        protected virtual async Task<T?> ResponseAsync<T>(HttpResponseMessage httpResponse) where T : class
+
+        protected virtual async Task<T?> ResponseAsync<T>(Func<Task<HttpResponseMessage>> func,bool ploho = false) where T : class
         {
+            var httpResponse = await func();
             if (httpResponse.IsSuccessStatusCode)
             {
                 return await httpResponse.Content.ReadFromJsonAsync<T>(cancellationToken: _cancellationToken);
@@ -43,13 +53,25 @@ namespace TaskManager.ClientSDK
             switch (httpResponse.StatusCode)
             {
                 case System.Net.HttpStatusCode.Unauthorized:
-                        var response = await _accountClient.RefreshToken(new RefreshTokenRequest { ExpiredToken = UserTokens.AuthResponse.Token,RefreshToken = UserTokens.AuthResponse.RefreshToken });
-                    if (response)
-                        return await httpResponse.Content.ReadFromJsonAsync<T>(cancellationToken: _cancellationToken);
+                    var response = await AccountClient.RefreshToken(_httpClient,
+                        new RefreshTokenRequest { ExpiredToken = UserTokens.AuthResponse.Token, RefreshToken = UserTokens.AuthResponse.RefreshToken },
+                        _cancellationToken);
+                    if (!ploho)
+                        return await ResponseAsync<T>(func,true);
                     break;
                 default:
                     break;
             }
+            return null;
+        }
+
+        protected static async Task<T?> ResponseAsync<T>(HttpResponseMessage httpResponse,CancellationToken cancellationToken) where T : class
+        {
+            if (httpResponse.IsSuccessStatusCode)
+            {
+                return await httpResponse.Content.ReadFromJsonAsync<T>(cancellationToken: cancellationToken);
+            }
+            var content = httpResponse.Content.ReadAsStringAsync();
             return null;
         }
     }

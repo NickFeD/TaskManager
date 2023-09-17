@@ -35,7 +35,6 @@ namespace TaskManager.Api.Entity
             FirstName = FirstName,
             LastLoginData = LastLoginData,
             LastName = LastName,
-            Password = Password,
             Phone = Phone,
             RegistrationDate = RegistrationDate,
         };

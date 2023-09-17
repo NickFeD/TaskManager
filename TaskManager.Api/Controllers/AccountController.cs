@@ -1,11 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using TaskManager.Api.Services.Abstracted;
 using System.IdentityModel.Tokens.Jwt;
-using TaskManager.Api.Data;
-using TaskManager.Api.Entity;
-using TaskManager.Api.Services;
-using TaskManager.Api.Services.Abstracted;
 using TaskManager.Command.Models;
-using Microsoft.AspNetCore.Http;
+using TaskManager.Api.Services;
+using Microsoft.AspNetCore.Mvc;
+using TaskManager.Api.Entity;
+using TaskManager.Api.Data;
 
 namespace TaskManager.Api.Controllers
 {
@@ -40,7 +39,7 @@ namespace TaskManager.Api.Controllers
             var authResponse = await _jwtServices.GetTokenAsync(authRequest, HttpContext.Connection.RemoteIpAddress.ToString());
 #pragma warning restore CS8602 // Разыменование вероятной пустой ссылки.
             if (authResponse is null)
-                return Unauthorized("The email or password is incorrect");
+                return BadRequest("The email or password is incorrect");
             return Ok(authResponse.Model);
         }
 
@@ -49,19 +48,27 @@ namespace TaskManager.Api.Controllers
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        [HttpPost("[action]")]
+        [HttpPost("RefreshToken")]
         [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
         [ProducesDefaultResponseType(typeof(string))]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest("Tokens must by provided.");
-            var token = GetJwtToken(request.ExpiredToken);
+            JwtSecurityToken? token;
+            try
+            {
+                token = GetJwtToken(request.ExpiredToken);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
             var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
             if (ipAddress is null)
                 return BadRequest("Your ip could not be determined");
             var userRefreshToken = _context.UserRefreshTokens.FirstOrDefault(
-                x => x.IsInvalidated == false && x.Token == request.ExpiredToken
+                x => x.IsInvalidated == true && x.Token == request.ExpiredToken
                 && x.RefreshToken == request.RefreshToken
                 && x.IpAddress == ipAddress);
             if (userRefreshToken is null)
@@ -84,18 +91,18 @@ namespace TaskManager.Api.Controllers
             return Ok(authResponse.Model);
         }
 
-        [HttpPost("[action]")]
-        [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
-        [ProducesDefaultResponseType(typeof(string))]
-        public async Task<IActionResult> Registration(UserModel model)
-        {
-            if (model is null)
-                return BadRequest("You didn't send anything");
-            var modelToCreate = await _userService.CreateAsync(model);
-            if (!modelToCreate.IsSuccess)
-                return BadRequest(modelToCreate.Reason);
-            return await AuthToken(new() { Email = model.Email, Password = model.Password });
-        }
+        //[HttpPost("[action]")]
+        //[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+        //[ProducesDefaultResponseType(typeof(string))]
+        //public async Task<IActionResult> Registration(UserModel model)
+        //{
+        //    if (model is null)
+        //        return BadRequest("You didn't send anything");
+        //    var modelToCreate = await _userService.CreateAsync(model);
+        //    if (!modelToCreate.IsSuccess)
+        //        return BadRequest(modelToCreate.Reason);
+        //    return await AuthToken(new() { Email = model.Email, Password = model.Password });
+        //}
 
         private Response<AuthResponse> ValidateDetails(JwtSecurityToken token, UserRefreshToken? userRefreshToken)
         {

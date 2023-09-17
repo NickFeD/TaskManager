@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using TaskManager.Api.Data;
 using TaskManager.Api.Services;
 using TaskManager.Command.Models;
+
+
 
 namespace TaskManager.Api.Controllers
 {
@@ -27,8 +30,8 @@ namespace TaskManager.Api.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        [ProducesResponseType(typeof(Response<UserModel>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(Response<UserModel>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(UserModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetMy()
         {
             var user = await _httpHandler.GetUserAsync(HttpContext);
@@ -40,17 +43,19 @@ namespace TaskManager.Api.Controllers
         /// <summary>
         /// Update your personal information
         /// </summary>
-        /// <param name="model"></param>
+        /// <param name="patchUser"></param>
         /// <returns></returns>
-        [HttpPut]
-        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(Response), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdateMy(UserModel model)
+        [HttpPatch]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+        [ProducesDefaultResponseType]
+        public async Task<IActionResult> UpdateMy([FromBody] JsonPatchDocument<UserModel> patchUser)
         {
             var user = await _httpHandler.GetUserAsync(HttpContext);
             if (user is null)
-                return NotFound(new Response { IsSuccess = false, Reason = "Not Found" });
-            model.Id = user.Id;
+                return NotFound("Not Found User");
+            var model = user.ToDto();
+            patchUser.ApplyTo(model);
             var response = _userService.Update(model);
             return Ok(response);
         }
@@ -74,15 +79,12 @@ namespace TaskManager.Api.Controllers
             return Ok(response);
         }
 
-            
-#pragma warning disable CS1572 // Комментарий XML содержит тег param, но параметр с таким именем не существует
-/// <summary>
+        /// <summary>
         /// Get a project by user id
         /// </summary>
-        /// <param name="userId"></param>
         /// <returns></returns>
         [HttpGet("projects")]
-#pragma warning restore CS1572 // Комментарий XML содержит тег param, но параметр с таким именем не существует
+
         [ProducesResponseType(typeof(Response<List<ProjectModel>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(Response<List<ProjectModel>>), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetMyProject()

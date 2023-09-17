@@ -22,7 +22,6 @@ namespace TaskManager.Api.Services
                 Id = model.Id,
                 FirstName = model.FirstName,
                 Email = model.Email,
-                Password = model.Password,
                 LastName = model.LastName,
                 Phone = model.Phone,
                 LastLoginData = model.LastLoginData,
@@ -71,7 +70,6 @@ namespace TaskManager.Api.Services
             userToUpdate.FirstName = model.FirstName;
             userToUpdate.LastName = model.LastName;
             userToUpdate.LastLoginData = model.LastLoginData;
-            userToUpdate.Password = model.Password;
             userToUpdate.Phone = model.Phone;
             _context.Users.Update(userToUpdate);
             _context.SaveChanges();

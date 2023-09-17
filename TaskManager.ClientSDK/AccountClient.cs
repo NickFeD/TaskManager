@@ -11,65 +11,55 @@ using TaskManager.Command.Models.Abstracted;
 
 namespace TaskManager.ClientSDK
 {
-    public partial class AccountClient
+    public partial class AccountClient : BaseClient
     {
-        protected readonly string _baseUrl;
-
-        protected readonly HttpClient _httpClient;
-
-        protected readonly CancellationToken _cancellationToken;
-
-        public AccountClient(string baseUrl, HttpClient httpClient, CancellationToken cancellationToken)
+        public AccountClient(string baseUrl, HttpClient httpClient, CancellationToken cancellationToken) : 
+            base(baseUrl, httpClient, cancellationToken)
         {
-            _baseUrl = baseUrl+ "/api/Account/";
-            _httpClient = httpClient;
-            _cancellationToken = cancellationToken;
-        }
-
-        protected virtual Task<bool> ResponseAsync(HttpResponseMessage httpResponse)
-        {
-            if (httpResponse.IsSuccessStatusCode)
-                return Task.FromResult(true);
-            return Task.FromResult(false);
-        }
-        protected virtual async Task<T?> ResponseAsync<T>(HttpResponseMessage httpResponse) where T : class
-        {
-            if (httpResponse.IsSuccessStatusCode)
-            {
-                return await httpResponse.Content.ReadFromJsonAsync<T>(cancellationToken: _cancellationToken);
-            }
-            return null;
         }
         public async Task<AuthResponse> AuthToken(AuthRequest authRequest)
         {
-            string url = _baseUrl + "AuthToken";
-            var httpResponse = await _httpClient.PostAsJsonAsync(url, authRequest, cancellationToken: _cancellationToken);
-            var response = await ResponseAsync<AuthResponse>(httpResponse);
-            UserTokens.AuthResponse = response;
+            var response = await ResponseAsync<AuthResponse>(()=> _httpClient.PostAsJsonAsync("/api/Account/AuthToken", authRequest, cancellationToken: _cancellationToken));
             if (response is null)
             {
-                throw new NullReferenceException();
+                return null;
             }
-                _httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + response.Token);
+            UserTokens.AuthResponse = response;
+            //_httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + response.Token);
+            _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", response.Token);
             return response;
         }
 
         public async Task<bool> RefreshToken(RefreshTokenRequest refreshToken)
         {
-            string url = _baseUrl + "RefreshToken";
-            var httpResponse = await _httpClient.PostAsJsonAsync(url, refreshToken, cancellationToken: _cancellationToken);
 
-            var response = await ResponseAsync<AuthResponse>(httpResponse);
+            var response = await ResponseAsync<AuthResponse>(()=>_httpClient.PostAsJsonAsync("/api/Account/RefreshToken", refreshToken, cancellationToken: _cancellationToken));
+            if (response is null)
+            {
+                throw new NullReferenceException();
+            }
             UserTokens.AuthResponse = response;
+            //_httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + response.Token);
+            _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", response.Token);
+            return true;
+        }
+
+        public static async Task<bool> RefreshToken(HttpClient httpClient, RefreshTokenRequest refreshToken,CancellationToken cancellationToken = new())
+        {
+            var httpResponse = await httpClient.PostAsJsonAsync("/api/Account/RefreshToken", refreshToken, cancellationToken: cancellationToken);
+
+            var response = await ResponseAsync<AuthResponse>(httpResponse,cancellationToken);
             if (response is null)
             {
                 var temp = await httpResponse.Content.ReadAsStringAsync();
                 throw new NullReferenceException();
             }
-            _httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + response.Token);
+            UserTokens.AuthResponse = response;
+            httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue( "Bearer", response.Token);
             return true;
         }
-
+        
+        
         //public async Task<AuthResponse> Registration(UserModel model)
         //{
         //    string url = _baseUrl + "Registration";

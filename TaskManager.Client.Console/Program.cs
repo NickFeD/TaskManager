@@ -1,18 +1,37 @@
 ﻿// See https://aka.ms/new-console-template for more information
+using TaskManager.Client.Console;
 using TaskManager.ClientSDK;
 Console.WriteLine("client create");
+var client = new Client("https://localhost:44329", new HttpClient(), new());
+Console.WriteLine("Добро пожаловать!");
+var task = Authorization(client);
 
-var client  = new Client("https://localhost:44329", new HttpClient(),new());
+Dictionary<string, IController> dict = new();
+dict.Add("1", new My(client.My));
 
-Console.WriteLine("client completed");
-var temp1 = await client.Account.AuthToken(new TaskManager.Command.Models.AuthRequest { Email = "string",Password ="string"});
-Console.WriteLine(temp1.ExpiresToken.ToLocalTime());
-Console.ReadLine();
-for (int i = 0;; i++)
+await task;
+Console.WriteLine("Выбрать контролер");
+var str = Console.ReadLine();
+Console.Clear();
+await dict[str].ShowContents();
+
+static async Task Authorization(Client client)
 {
-    var temp = await client.My.GetMy();
-    Console.WriteLine(temp.FirstName);
-    await Task.Delay(500);
+    Console.WriteLine("Зайдите на аккаунт");
+    while (true)
+    {
+        Console.Write("Email: ");
+        var email = Console.ReadLine();
+        Console.Write("Password: ");
+        var password = Console.ReadLine();
+        var authResponse = await client.Account.AuthToken(new TaskManager.Command.Models.AuthRequest { Email = email, Password = password });
+        if (authResponse != null)
+        {
+            Console.Clear();
+            Console.WriteLine($"Добро пожаловать {(await client.My.Get()).FirstName}");
+            return;
+        }
+        Console.Clear();
+        Console.WriteLine("Неправильный пароль или email");
+    }
 }
-
-Console.WriteLine("stop");
