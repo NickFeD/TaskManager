@@ -3,21 +3,21 @@ using TaskManager.Command.Models.Abstracted;
 
 namespace TaskManager.Api.Controllers.Abstracted
 {
-    public interface ICRUDController<TModel> where TModel : Model
+    interface ICRUDController<TModel> where TModel : Model
     {
         [HttpGet]
-        public Task<IActionResult> GetAll();
+        Task<IActionResult> GetAll();
 
         [HttpGet("{id}")]
-        public Task<IActionResult> GetById(int id);
+        Task<IActionResult> GetById(int id);
 
         [HttpPost]
-        public Task<IActionResult> Create([FromBody] TModel model);
+        Task<IActionResult> Create(TModel model);
 
         [HttpPut("{id}")]
-        public Task<IActionResult> Update(int id, TModel model);
+        Task<IActionResult> Update(int id, TModel model);
 
         [HttpDelete("{id}")]
-        public Task<IActionResult> Delete(int id);
+        Task<IActionResult> Delete(int id);
     }
 }

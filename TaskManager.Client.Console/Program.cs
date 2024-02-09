@@ -1,6 +1,8 @@
 ﻿// See https://aka.ms/new-console-template for more information
+using Microsoft.Toolkit.Uwp.Notifications;
 using TaskManager.Client.Console;
 using TaskManager.ClientSDK;
+
 Console.WriteLine("client create");
 var client = new Client("https://localhost:44329", new HttpClient(), new());
 Console.WriteLine("Добро пожаловать!");

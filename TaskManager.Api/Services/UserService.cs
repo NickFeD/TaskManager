@@ -1,123 +1,73 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaskManager.Api.Data;
 using TaskManager.Api.Entity;
+using TaskManager.Api.Exceptions;
 using TaskManager.Api.Services.Abstracted;
 using TaskManager.Command.Models;
 using Task = System.Threading.Tasks.Task;
 
 namespace TaskManager.Api.Services
 {
-    public class UserService
+    public class UserService(ApplicationContext context)
     {
-        private readonly ApplicationContext _context;
-        public UserService(ApplicationContext context) { _context = context; }
+        private readonly ApplicationContext _context = context;
 
-        public Response<UserModel> Create(UserModel model)
+        public async Task<List<UserModel>> GetAllAsync()
         {
-            var user = _context.Users.AsNoTracking().FirstOrDefault(u => u.Email.Equals(model.Email));
-            if (user is not null)
-                return new() { IsSuccess = false, Reason = "At this moment, the email is busy" };
-            user = new Entity.User()
-            {
-                Id = model.Id,
-                FirstName = model.FirstName,
-                Email = model.Email,
-                LastName = model.LastName,
-                Phone = model.Phone,
-                LastLoginData = model.LastLoginData,
-                RegistrationDate = DateTime.Now,
-            };
+            var users = await _context.Users.AsNoTracking().Select(d => d.ToDto()).ToListAsync();
+
+            if (users.Count < 1)
+                throw new NotFoundException("Not found desks");
+
+            return users;
+        }
+
+        public async Task<UserModel> GetByIdAsync(int id)
+        {
+            var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id.Equals(id));
+
+            if (user is null)
+                throw new NotFoundException("Not found user");
+
+            return user.ToDto();
+        }
+
+        public async Task<UserModel> Registration(User user)
+        {
+            if (await _context.Users.AnyAsync(u => u.Email == user.Email))
+                throw new BadRequestException($"By e-mail {user.Email} the user is already registered");
             _context.Users.Add(user);
-            _context.SaveChanges();
-            model.Id = user.Id;
-            return new() { IsSuccess = true, Model = model };
+            user.Id = await _context.SaveChangesAsync();
+            return user.ToDto();
         }
 
-        public Response Delete(User user)
+        public async Task UpdateAsync(UserModel model)
         {
-            if (user is null)
-                return new() { IsSuccess = false, Reason = "User not found" };
-            var projects = _context.Projects.Where(p => p.CreatorId == user.Id).ToList();
-            _context.Users.Remove(user);
-            _context.SaveChanges();
-            return new() { IsSuccess = true };
+            var countUpdate = await _context.Users.Where(u => u.Id == model.Id)
+                .ExecuteUpdateAsync(setter => setter
+                .SetProperty(o => o.Email, model.Email)
+                .SetProperty(o => o.FirstName, model.FirstName)
+                .SetProperty(o => o.LastName, model.LastName)
+                .SetProperty(o => o.Phone, model.Phone));
 
+            if (countUpdate < 1)
+                throw new NotFoundException("Not found user");
+        }
+        public async Task DeleteAsync(int id)
+        {
+            var countDelete = await _context.Users.Where(d => d.Id == id).ExecuteDeleteAsync();
+
+            if (countDelete < 1)
+                throw new NotFoundException("Not found user");
         }
 
-        public Response<List<UserModel>> GetAll()
+        public  async Task<List<ProjectModel>> GetProjectsByUserIdAsync(int userId)
         {
-            var users = _context.Users.ToList().Select(u => u.ToDto()).ToList();
-            if (users is null)
-                return new() { IsSuccess = false, Reason = "No users" };
-            return new() { IsSuccess = true, Model = users };
-        }
-
-        public Response<UserModel> GetById(int id)
-        {
-            var user = _context.Users.AsNoTracking().FirstOrDefault(u => u.Id == id);
-
-            if (user is null)
-                return new() { IsSuccess = false, Reason = "No user" };
-            return new() { IsSuccess = true, Model = user.ToDto() };
-        }
-
-        public Response Update(UserModel model)
-        {
-            var userToUpdate = _context.Users.Find(model.Id);
-            if (userToUpdate is null)
-                return new() { IsSuccess = false, Reason = "There is no user" };
-            //userToUpdate.Email = model.Email;
-            userToUpdate.FirstName = model.FirstName;
-            userToUpdate.LastName = model.LastName;
-            userToUpdate.LastLoginData = model.LastLoginData;
-            userToUpdate.Phone = model.Phone;
-            _context.Users.Update(userToUpdate);
-            _context.SaveChanges();
-            return new() { IsSuccess = true };
-        }
-
-
-        public  Task<Response<List<Project>>> GetProjectsByUserIdAsync(int userId)
-        {
-#pragma warning disable CS8602 // Разыменование вероятной пустой ссылки.
-#pragma warning disable CS8604 // Возможно, аргумент-ссылка, допускающий значение NULL.
-#pragma warning disable CS8620 // Аргумент запрещено использовать для параметра из-за различий в отношении допустимости значений NULL для ссылочных типов.
-            var projectParticipants = _context
-                .Users
+            return await _context
+                .Participants.Where(p => p.UserId == userId)
                 .AsNoTracking()
-                .Include(u => u.Participants)
-                .ThenInclude(p => p.Project)
-                .FirstOrDefault(u => u.Id == userId)
-                .Participants
-                .Distinct()
-                .ToList();
-#pragma warning restore CS8620 // Аргумент запрещено использовать для параметра из-за различий в отношении допустимости значений NULL для ссылочных типов.
-#pragma warning restore CS8604 // Возможно, аргумент-ссылка, допускающий значение NULL.
-#pragma warning restore CS8602 // Разыменование вероятной пустой ссылки.
-            if (projectParticipants.Select(p => p.Project) is null)
-                return Task.FromResult<Response<List<Project>>>( new() { IsSuccess = false, Reason = "Not found project" });
-
-            var response = new Response<List<Project>>()
-            {
-                IsSuccess = true,
-                Model = projectParticipants.Select(p => p.Project).ToList(),
-            };
-            return Task.FromResult(response);
+                .Include(p => p.Project).Select(p => p.Project.ToDto()).ToListAsync();
         }
 
-        public Task<Response<List<UserModel>>> GetAllAsync()
-            =>Task.FromResult(GetAll());
-
-        public Task<Response<UserModel>> GetByIdAsync(int id)
-            => Task.FromResult(GetById(id));
-
-        public Task<Response<UserModel>> CreateAsync(UserModel model)
-            => Task.FromResult(Create(model));
-
-        public Task<Response> UpdateAsync(UserModel model)
-            => Task.FromResult(Update(model));
-
-        public Task<Response> DeleteAsync(User user)
-            => Task.FromResult(Delete(user));
     }
 }

@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using TaskManager.ClientSDK;
+using TaskManager.Command.Models;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TaskManager.Client.Console
@@ -22,6 +23,8 @@ namespace TaskManager.Client.Console
             {
                 ["1"] = Info,
                 ["2"] = Edit,
+                ["3"] = MyProject,
+                ["4"] = Delete,
             };
 
             
@@ -32,7 +35,7 @@ namespace TaskManager.Client.Console
             while (true)
             {
                 System.Console.WriteLine("Что вы хотите сделать?");
-                System.Console.WriteLine("1. Получит информацию о себе");
+                System.Console.WriteLine("1. Получить информацию о себе");
                 System.Console.WriteLine("2. Изменить информацию о себе");
                 System.Console.WriteLine("3. Проекты в которых я участвую");
                 System.Console.ForegroundColor = ConsoleColor.Red;
@@ -68,7 +71,6 @@ $"\n" +
 $"Нажмите Enter чтобы вернутся");
             System.Console.ReadLine();
             System.Console.Clear();
-            return;
         }
 
         private async Task Edit()
@@ -163,8 +165,36 @@ $"Нажмите Enter чтобы вернутся");
             
         }
 
+        private async Task MyProject()
+        {
+            System.Console.WriteLine("Все проекты в которых вы участвуете");
+            var projects = await _client.GetMyProject();
+            Dictionary<string,ProjectModel> keyValuePairs = new();
+            for (int i = 0; i < projects.Count; i++)
+            {
+                keyValuePairs.Add(i.ToString(), projects[i]);
+                System.Console.WriteLine($"{i}. {projects[i].Name}\n\t{projects[i].Description}");
+            }
+            System.Console.WriteLine("Нажмите Enter чтобы вернутся");
+            System.Console.ReadLine();
+            System.Console.Clear();
+        }
 
-        private void Show(int start=0,params string[] strings)
+        private async Task Delete()
+        {
+            System.Console.WriteLine("Вы точно хотите удалить аккаунт?\n[y/n]");
+            var str = System.Console.ReadLine();
+            if (str is not null && str.ToLower() =="y")
+            {
+                var isDelete = await _client.DeleteMy(true);
+                if (isDelete)
+                {
+                    System.Console.WriteLine("Аккаунт удален");
+                }
+            }
+        }
+
+            private void Show(int start=0,params string[] strings)
         {
             for (int i = 0; i < strings.Length; i++)
             {

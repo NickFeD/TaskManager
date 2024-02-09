@@ -8,9 +8,5 @@ namespace TaskManager.ClientSDK
 {
     internal class Test
     {
-        public void trert()
-        {
-            var client = new TaskManager.ClientSDK.Client1("fafa",new());
-        }
     }
 }

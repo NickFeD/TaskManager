@@ -32,6 +32,10 @@ namespace TaskManager.ClientSDK
             switch (httpResponse.StatusCode)
             {
                 case System.Net.HttpStatusCode.Unauthorized:
+                    if (UserTokens.AuthResponse is null)
+                    {
+                        ExHandler.On
+                    }
                     var response = await AccountClient.RefreshToken(_httpClient,
                         new RefreshTokenRequest { ExpiredToken = UserTokens.AuthResponse.Token, RefreshToken = UserTokens.AuthResponse.RefreshToken },
                         _cancellationToken);
