@@ -1,0 +1,93 @@
+/* Создайте стили для светлой темы, используя селектор .light и переменные CSS */
+:root[data-theme="light"] {
+  --background: #f4f4f4;
+  --shadow-box: #fff;
+  --text: #333333;
+  --input: #ffffff;;
+  --border: #cccccc;
+  --button: #007bff;
+  --button-text: #ffffff;
+}
+
+/* Создайте стили для темной темы, используя селектор .dark и переменные CSS */
+:root[data-theme="dark"] {
+  --background: #222222;
+  --shadow-box: #333333;
+  --text: #f0f0f0;
+  --input: #444444;
+  --border: #666666;
+  --button: #00aaff;
+  --button-text: #f0f0f0;
+}
+  .shadow-box{
+    background-color: var(--shadow-box);
+    box-shadow: 0 2px 4px 0 rgba(0,0,0,.1);
+    border-radius: 4px;
+  }
+  /* Создайте общие стили для контейнера, заголовка, формы, группы ввода, метки, поля ввода, выбора и кнопки */
+  .container {
+    background-color: var(--container);
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .title {
+    text-align: center;
+    font-size: 36px;
+    margin-bottom: 20px;
+  }
+  
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .inputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .label {
+    font-weight: bold;
+  }
+  .input,
+  .select {
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--text);
+  }
+  
+  button {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    color: var(--button-text);
+    background-color: var(--button);
+    cursor: pointer;
+  }
+  /* Примените стили в зависимости от значения переменной --background */
+  body {
+    background-color: var(--background);
+    color: var(--text);
+  }
+  
+  input,
+  select {
+    background-color: var(--input);
+    color: var(--text);
+  }
+  
+  /* Добавьте немного анимации для кнопки */
+  .button:hover {
+    transform: scale(1.05);
+  }
+  
+  .button:active {
+    transform: scale(0.95);
+  }
+  
+  

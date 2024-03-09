@@ -22,9 +22,9 @@ namespace TaskManager.Api.Entity
         [ForeignKey(nameof(CreatorId))]
         public User? Creator { get; set; }
 
-        public List<ProjectParticipant> Participants { get; set; } = new();
-        public List<Role>? Roles { get; set; } = new();
-        public List<Desk>? Desks { get; set; } = new();
+        public List<ProjectParticipant> Participants { get; set; } = [];
+        public List<Role>? Roles { get; set; } = [];
+        public List<Desk>? Desks { get; set; } = [];
 
         public ProjectModel ToDto() => new()
         {

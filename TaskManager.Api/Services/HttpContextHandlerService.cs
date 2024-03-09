@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using TaskManager.Api.Data;
 using TaskManager.Api.Entity;
+using TaskManager.Api.Exceptions;
 using Task = System.Threading.Tasks.Task;
 
 namespace TaskManager.Api.Services
@@ -16,26 +17,26 @@ namespace TaskManager.Api.Services
             _context = context;
         }
 
-        public User? GetUserAsNoTracking(HttpContext httpContext)
+        public User GetUserAsNoTracking(HttpContext httpContext)
         {
             var emailUser = GetEmail(httpContext);
             if (emailUser is null)
-                return null;
-            return _context.Users.AsNoTracking().FirstOrDefault(u => u.Email.Equals(emailUser));
+                throw new UnauthorizedException();
+            return _context.Users.AsNoTracking().FirstOrDefault(u => u.Email.Equals(emailUser))?? throw new UnauthorizedException();
         }
         
-        public Task<User?> GetUserAsNoTrackingAsync(HttpContext httpContext)
+        public Task<User> GetUserAsNoTrackingAsync(HttpContext httpContext)
             => Task.FromResult(GetUserAsNoTracking(httpContext));
 
-        public User? GetUser(HttpContext httpContext)
+        public User GetUser(HttpContext httpContext)
         {
             var emailUser = GetEmail(httpContext);
             if (emailUser is null)
-                return null;
-            return _context.Users.FirstOrDefault(u => u.Email.Equals(emailUser));
+                throw new UnauthorizedException();
+            return _context.Users.FirstOrDefault(u => u.Email.Equals(emailUser)) ?? throw new UnauthorizedException();
         }
 
-        public Task<User?> GetUserAsync(HttpContext httpContext)
+        public Task<User> GetUserAsync(HttpContext httpContext)
             => System.Threading.Tasks.Task.FromResult(GetUser(httpContext));
 
         public Role? GetUserRole(HttpContext httpContext, int projectId)

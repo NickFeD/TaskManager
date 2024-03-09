@@ -9,6 +9,6 @@ namespace TaskManager.ClientSDK
 {
     public static class UserTokens
     {
-        public static AuthResponse AuthResponse { get; set; }
+        public static AuthResponse? AuthResponse { get; set; }
     }
 }

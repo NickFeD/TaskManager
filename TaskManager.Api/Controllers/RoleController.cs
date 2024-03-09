@@ -9,10 +9,9 @@ namespace TaskManager.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class RoleController : ControllerBase, ICRUDController<RoleModel>
+    public class RoleController(ApplicationContext context) : ControllerBase, ICRUDController<RoleModel>
     {
-        private readonly RoleService _service;
-        public RoleController(ApplicationContext context) { _service = new(context); }
+        private readonly RoleService _service = new(context);
 
         /// <summary>
         /// Create a role
@@ -20,16 +19,12 @@ namespace TaskManager.Api.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
-        [ProducesResponseType(typeof(Response<RoleModel>), StatusCodes.Status201Created)]
-        [ProducesResponseType(typeof(Response<RoleModel>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesDefaultResponseType]
         public async Task<IActionResult> Create([FromBody] RoleModel model)
         {
-            if (model is null)
-                return BadRequest(new Response<RoleModel> { IsSuccess = false, Reason = "Request null" });
             var modelToCreate = await _service.CreateAsync(model);
-            if (!modelToCreate.IsSuccess)
-                return BadRequest(modelToCreate);
-            return CreatedAtAction(nameof(GetById), new { id = modelToCreate.Model.Id }, modelToCreate);
+            return CreatedAtAction(nameof(GetById), new { id = modelToCreate.Id }, modelToCreate);
         }
 
         /// <summary>
@@ -38,15 +33,10 @@ namespace TaskManager.Api.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete]
-        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Delete(int id)
         {
-            var response = await _service.GetByIdAsync(id);
-            if (!response.IsSuccess)
-                return BadRequest(response);
-            _service.Delete(id);
-            return Ok(response);
+            await _service.DeleteAsync(id);
+            return Ok();
         }
 
         /// <summary>
@@ -54,13 +44,9 @@ namespace TaskManager.Api.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        [ProducesResponseType(typeof(Response<List<RoleModel>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(Response<List<RoleModel>>), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetAll()
         {
             var response = await _service.GetAllAsync();
-            if (!response.IsSuccess)
-                return BadRequest(response);
             return Ok(response);
         }
 
@@ -70,13 +56,9 @@ namespace TaskManager.Api.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(Response<RoleModel>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(Response<RoleModel>), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetById(int id)
         {
             var response = await _service.GetByIdAsync(id);
-            if (!response.IsSuccess)
-                return BadRequest(response);
             return Ok(response);
         }
 
@@ -87,14 +69,10 @@ namespace TaskManager.Api.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPut]
-        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Update(int id, RoleModel model)
         {
-            var response = await _service.UpdateAsync(model);
-            if (!response.IsSuccess)
-                return BadRequest(response);
-            return Ok(response);
+            await _service.UpdateAsync(model);
+            return Ok();
         }
     }
 }
