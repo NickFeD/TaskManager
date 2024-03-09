@@ -13,6 +13,7 @@
   <PropertyGroup>
     <IncludeOpenAPIAnalyzers>true</IncludeOpenAPIAnalyzers>
     <StartupObject>TaskManager.Api.Program</StartupObject>
+    <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -42,6 +43,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TaskManager.Command.Models\TaskManager.Command.Models.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Policies\Handlers\" />
+    <Folder Include="Policies\Requirements\" />
   </ItemGroup>
 
 </Project>

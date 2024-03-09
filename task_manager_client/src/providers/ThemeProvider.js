@@ -1,28 +1,46 @@
 import React from 'react'
 import { ThemeContext, themes } from '../contexts/ThemeContext'
+import { FluentProvider, webDarkTheme, webLightTheme } from '@fluentui/react-components'
 
 const getTheme = () => {
   const theme = `${window?.localStorage?.getItem('theme')}`
-  if (Object.values(themes).includes(theme)) return theme
+  switch (theme) {
+    case themes.dark:
+      document.documentElement.dataset.theme = themes.dark
+      return webDarkTheme
 
+    case themes.light:
+      document.documentElement.dataset.theme = themes.light
+      return webLightTheme
+
+    case themes.none:
+      return getSystemTheme();
+    default:
+      saveTheme(themes.none)
+      return getSystemTheme();
+  }
+}
+const getSystemTheme = () => {
   const userMedia = window.matchMedia('(prefers-color-scheme: light)')
-  if (userMedia.matches) return themes.light
-
-  return themes.dark
+  if (userMedia.matches) {
+    document.documentElement.dataset.theme = themes.light
+    return webLightTheme
+  }
+  document.documentElement.dataset.theme = themes.dark
+  return webDarkTheme
+}
+const saveTheme = (theme) => {
+  document.documentElement.dataset.theme = theme
+  localStorage.setItem('theme', `${theme}`)
 }
 
 const ThemeProvider = ({ children }) => {
-  const [ theme, setTheme ] = React.useState(getTheme)
-
-  React.useEffect(() => {
-    document.documentElement.dataset.theme = theme
-    localStorage.setItem('theme', theme)
-  }, [ theme ])
+  const [theme, setTheme] = React.useState(getTheme)
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
+    <FluentProvider theme={theme}>
       {children}
-    </ThemeContext.Provider>
+    </FluentProvider>
   )
 }
 

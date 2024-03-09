@@ -5,5 +5,3 @@ export const themes = {
   light: 'light',
   none: 'none',
 }
-
-export const ThemeContext = React.createContext(null)

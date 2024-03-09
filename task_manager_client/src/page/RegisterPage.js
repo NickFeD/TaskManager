@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import styles from './Register.module.css'; // Импортируйте файл стилей
+import { Button, Field, Input, Link, Select } from '@fluentui/react-components';
+import React, { useState } from 'react';
 
 // Это ваш компонент страницы регистрации
 function RegisterPage() {
@@ -70,130 +70,101 @@ function RegisterPage() {
       language: 'Sprache',
     },
   };
-  useEffect(() => {
-
-    async function Deere() {
-      const response = await fetch("http://localhost:5023/api/Tests", {
-        method: 'GET',
-        headers: {
-          'Content-type': 'application/json',
-        },
-        'mode':'no-cors'
-      });
-
-      console.log(response)
-    }
-    Deere();
-  }, []);
   // Верните JSX-код для отображения формы регистрации
   return (
-    <div className={`shadow-box ${styles.container}`}>
-      <h1 className={styles.title}>{texts[language].title}</h1>
-      <form onSubmit={handleSubmit} className={styles.form}>
-        <div className={styles.inputGroup}>
-          <label htmlFor="first-name" className={styles.label}>
-            {texts[language].firstName}:
-          </label>
-          <input
+    <div className=" container shadow-box login-page">
+      <h1>{texts[language].title}</h1>
+      <form onSubmit={handleSubmit} className="form">
+
+        <Field
+          label={{ htmlFor: "first-name", children: `${texts[language].firstName}` }}>
+          <Input
             type="text"
             id="first-name"
             name="first-name"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
-            required
-            className={styles.input}
           />
-        </div>
-        <div className={styles.inputGroup}>
-          <label htmlFor="last-name" className={styles.label}>
-            {texts[language].lastName}:
-          </label>
-          <input
+        </Field>
+
+        <Field
+          label={{ htmlFor: "last-name", children: `${texts[language].lastName}` }}>
+          <Input
             type="text"
             id="last-name"
             name="last-name"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
-            required
-            className={styles.input}
           />
-        </div>
-        <div className={styles.inputGroup}>
-          <label htmlFor="email" className={styles.label}>
-            {texts[language].email}:
-          </label>
-          <input
+        </Field>
+
+        <Field
+          label={{ htmlFor: "email", children: `${texts[language].email}` }}>
+          <Input
             type="email"
             id="email"
             name="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
-            className={styles.input}
           />
-        </div>
-        <div className={styles.inputGroup}>
-          <label htmlFor="password" className={styles.label}>
-            {texts[language].password}:
-          </label>
-          <input
+        </Field>
+
+        <Field
+          label={{ htmlFor: "password", children: `${texts[language].password}` }}>
+          <Input
             type="password"
             id="password"
             name="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
-            className={styles.input}
           />
-        </div>
-        <div className={styles.inputGroup}>
-          <label htmlFor="confirm-password" className={styles.label}>
-            {texts[language].confirmPassword}:
-          </label>
-          <input
+        </Field>
+
+        <Field
+          label={{ htmlFor: "confirm-password", children: `${texts[language].confirmPassword}` }}>
+          <Input
             type="password"
             id="confirm-password"
             name="confirm-password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            className={styles.input}
           />
-        </div>
-        <div className={styles.inputGroup}>
-          <label htmlFor="phone" className={styles.label}>
-            {texts[language].phone}:
-          </label>
-          <input
+        </Field>
+
+        <Field
+          label={{ htmlFor: "phone", children: `${texts[language].phone}` }}>
+          <Input
             type="tel"
             id="phone"
             name="phone"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            required
-            className={styles.input}
           />
-        </div>
-        <div className={styles.inputGroup}>
-          <label htmlFor="language" className={styles.label}>
-            {texts[language].language}:
-          </label>
-          <select
+        </Field>
+
+        <Field
+          label={{ htmlFor: "language", children: `${texts[language].language}` }}
+        >
+          <Select
             id="language"
             name="language"
             value={language}
             onChange={handleLanguageChange}
-            className={styles.select}
           >
             <option value="ru">Русский</option>
             <option value="en">English</option>
             <option value="de">Deutsch</option>
-          </select>
-        </div>
-        <button type="submit" className={styles.button}>
+          </Select>
+        </Field>
+
+        <Button type="submit" appearance='primary'>
           {texts[language].submit}
-        </button>
+        </Button>
       </form>
+
+      <p>
+        Уже зарегистрированы? <Link href="/login">Войти</Link>
+      </p>
     </div>
   );
 }
