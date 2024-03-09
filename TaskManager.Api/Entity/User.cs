@@ -24,8 +24,8 @@ namespace TaskManager.Api.Entity
 
         public DateTime LastLoginData { get; set; } = DateTime.Now;
 
-        public List<ProjectParticipant>? Participants { get; set; } = [];
-        public List<UserRefreshToken> RefreshTokens { get; set; } = [];
+        public List<ProjectParticipant>? Participants { get; set; } = new();
+        public List<UserRefreshToken> RefreshTokens { get; set; } = new();
 
 
         public UserModel ToDto() => new()

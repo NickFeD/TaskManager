@@ -12,7 +12,7 @@ namespace TaskManager.ClientSDK
 {
     public class MyClient : BaseClient
     {
-        public MyClient(string baseUrl, HttpClient httpClient, CancellationToken cancellationToken) : base(baseUrl+ "/api/my/", httpClient, cancellationToken)
+        public MyClient(string baseUrl, HttpClient httpClient, CancellationToken cancellationToken) : base(baseUrl+ "/api/my", httpClient, cancellationToken)
         {
         }
 
@@ -29,15 +29,7 @@ namespace TaskManager.ClientSDK
         public async Task<bool> DeleteMy(bool isConfirmed)
         {
             if (isConfirmed)
-            {
-                if (await ResponseAsync(() => _httpClient.DeleteAsync("?isConfirmed=true", _cancellationToken)))
-                {
-                    _httpClient.DefaultRequestHeaders.Authorization = null;
-                    UserTokens.AuthResponse = null;
-                    return true;
-                } 
-                return false;
-            }
+                return await ResponseAsync(() => _httpClient.DeleteAsync("?isConfirmed=true", _cancellationToken));
                 return await ResponseAsync(() => _httpClient.DeleteAsync("?isConfirmed=false", _cancellationToken));
         }
 

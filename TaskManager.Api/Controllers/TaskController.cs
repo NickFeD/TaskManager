@@ -4,16 +4,16 @@ using TaskManager.Api.Controllers.Abstracted;
 using TaskManager.Api.Data;
 using TaskManager.Api.Services;
 using TaskManager.Command.Models;
-using Microsoft.AspNetCore.Http;
 
 namespace TaskManager.Api.Controllers
 {
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class TaskController(ApplicationContext context) : ControllerBase, ICRUDController<TaskModel>
+    public class TaskController : ControllerBase, ICRUDController<TaskModel>
     {
-        private readonly TaskService _service = new(context);
+        private readonly TaskService _service;
+        public TaskController(ApplicationContext context) { _service = new(context); }
 
         /// <summary>
         /// Create a task
@@ -21,11 +21,16 @@ namespace TaskManager.Api.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
-        [ProducesResponseType(typeof(TaskModel), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(Response<TaskModel>), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(Response<TaskModel>), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Create([FromBody] TaskModel model)
         {
+            if (model is null)
+                return BadRequest(new Response<ProjectModel> { IsSuccess = false, Reason = "Request null" });
             var modelToCreate = await _service.CreateAsync(model);
-            return CreatedAtAction(nameof(GetById), new { id = modelToCreate.Id }, modelToCreate);
+            if (!modelToCreate.IsSuccess)
+                return BadRequest(modelToCreate);
+            return CreatedAtAction(nameof(GetById), new { id = modelToCreate.Model.Id }, modelToCreate);
         }
 
         /// <summary>
@@ -34,12 +39,15 @@ namespace TaskManager.Api.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesDefaultResponseType]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Delete(int id)
         {
-            await _service.DeleteAsync(id);
-            return NoContent();
+            var taskToDelete = await _service.GetByIdAsync(id);
+            if (!taskToDelete.IsSuccess)
+                return BadRequest(taskToDelete);
+            _service.Delete(id);
+            return Ok(taskToDelete);
         }
 
         /// <summary>
@@ -47,9 +55,13 @@ namespace TaskManager.Api.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
+        [ProducesResponseType(typeof(Response<List<TaskModel>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response<List<TaskModel>>), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetAll()
         {
             var response = await _service.GetAllAsync();
+            if (!response.IsSuccess)
+                return BadRequest(response);
             return Ok(response);
         }
 
@@ -59,9 +71,13 @@ namespace TaskManager.Api.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(Response<List<TaskModel>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response<List<TaskModel>>), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetById(int id)
         {
             var response = await _service.GetByIdAsync(id);
+            if (!response.IsSuccess)
+                return BadRequest(response);
             return Ok(response);
         }
 
@@ -72,10 +88,14 @@ namespace TaskManager.Api.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPut]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Update(int id, TaskModel model)
         {
-            await _service.UpdateAsync(model);
-            return Ok();
+            var response = await _service.UpdateAsync(model);
+            if (!response.IsSuccess)
+                return BadRequest(response);
+            return Ok(response);
         }
     }
 }

@@ -11,9 +11,13 @@ namespace TaskManager.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UsersController(ApplicationContext context) : ControllerBase
+    public class UsersController : ControllerBase
     {
-        private readonly UserService _service = new(context);
+        private readonly UserService _service;
+        public UsersController(ApplicationContext context)
+        {
+            _service = new(context);
+        }
 
         /// <summary>
         /// Get a user by id
@@ -22,9 +26,13 @@ namespace TaskManager.Api.Controllers
         /// <returns></returns>
         [Authorize]
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(Response<UserModel>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response<UserModel>), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetById(int id)
         {
             var userToGet = await _service.GetByIdAsync(id);
+            if (!userToGet.IsSuccess)
+                return NotFound(userToGet);
             return Ok(userToGet);
         }
 
@@ -35,10 +43,15 @@ namespace TaskManager.Api.Controllers
         /// <param name="userId"></param>
         /// <returns></returns>
         [HttpGet("{userId}/projects")]
+        [ProducesResponseType(typeof(Response<List<ProjectModel>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response<List<ProjectModel>>), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetProjectByUserId(int userId)
         {
             var projects = await _service.GetProjectsByUserIdAsync(userId);
-            return Ok(projects);
+            if (!projects.IsSuccess)
+                return BadRequest(projects);
+            var models = projects.Model.Select(u => u.ToDto()).ToList();
+            return Ok(models);
         }
     }
 }

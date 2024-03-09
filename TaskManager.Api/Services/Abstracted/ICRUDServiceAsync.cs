@@ -4,13 +4,13 @@ using TaskManager.Command.Models;
 
 namespace TaskManager.Api.Services.Abstracted
 {
-    interface ICRUDServiceAsync<TModel> where TModel : class 
+    public interface ICRUDServiceAsync<TModel> where TModel : class 
     {
-        Task<List<TModel>> GetAllAsync();
-        Task<TModel> GetByIdAsync(int id);
-        Task<TModel> CreateAsync(TModel model);
-        Task UpdateAsync(TModel model);
-        Task DeleteAsync(int id);
+        Task<Response<List<TModel>>> GetAllAsync();
+        Task<Response<TModel>> GetByIdAsync(int id);
+        Task<Response<TModel>> CreateAsync(TModel model);
+        Task<Response> UpdateAsync(TModel model);
+        Task<Response> DeleteAsync(int id);
 
     }
 }

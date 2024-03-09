@@ -14,10 +14,16 @@ namespace TaskManager.Api.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class MyController(ApplicationContext context) : ControllerBase
+    public class MyController : ControllerBase
     {
-        private readonly HttpContextHandlerService _httpHandler = new(context);
-        private readonly UserService _userService = new(context);
+        private readonly HttpContextHandlerService _httpHandler;
+        private readonly UserService _userService;
+
+        public MyController(ApplicationContext context)
+        {
+            _httpHandler = new(context);
+            _userService = new(context);
+        }
 
         /// <summary>
         /// Get information about the user who sent the request
@@ -30,26 +36,27 @@ namespace TaskManager.Api.Controllers
         {
             var user = await _httpHandler.GetUserAsync(HttpContext);
             if (user is null)
-                return BadRequest("Сould not identify the user");
+                return BadRequest("Сould not identify the user" );
             return Ok(user.ToDto());
         }
 
         /// <summary>
         /// Update your personal information
         /// </summary>
-        /// <param name="userModel"></param>
+        /// <param name="patchUser"></param>
         /// <returns></returns>
-        [HttpPut]
+        [HttpPatch]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
         [ProducesDefaultResponseType]
-        public async Task<IActionResult> Update(UserModel userModel)
+        public async Task<IActionResult> UpdateMy([FromBody] JsonPatchDocument<UserModel> patchUser)
         {
             var user = await _httpHandler.GetUserAsync(HttpContext);
             if (user is null)
                 return NotFound("Not Found User");
-            userModel.Id = user.Id;
-            var response = _userService.UpdateAsync(userModel);
+            var model = user.ToDto();
+            patchUser.ApplyTo(model);
+            var response = _userService.Update(model);
             return Ok(response);
         }
 
@@ -59,18 +66,17 @@ namespace TaskManager.Api.Controllers
         /// <param name="isConfirmed"></param>
         /// <returns></returns>
         [HttpDelete]
-        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesDefaultResponseType]
-        public async Task<IActionResult> Delete(bool isConfirmed)
+        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> DeleteMy(bool isConfirmed)
         {
             if (!isConfirmed)
-                return BadRequest("Not confirmed");
+                return BadRequest(new Response { IsSuccess = false, Reason = "Not confirmed" });
             var userToDelete = await _httpHandler.GetUserAsync(HttpContext);
             if (userToDelete is null)
-                return NotFound();
-            await _userService.DeleteAsync(userToDelete.Id);
-            return Ok();
+                return BadRequest(new Response { IsSuccess = false, Reason = "Not found" });
+            var response = await _userService.DeleteAsync(userToDelete);
+            return Ok(response);
         }
 
         /// <summary>
@@ -78,16 +84,19 @@ namespace TaskManager.Api.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("projects")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        [ProducesDefaultResponseType]
+
+        [ProducesResponseType(typeof(Response<List<ProjectModel>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response<List<ProjectModel>>), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetMyProject()
         {
             var user = _httpHandler.GetUser(HttpContext);
             if (user is null)
-                return BadRequest("FATAL ERROR");
+                return BadRequest(new Response<List<ProjectModel>> { IsSuccess = false, Reason= "FATAL ERROR" });
             var projects = await _userService.GetProjectsByUserIdAsync(user.Id);
-            return Ok(projects);
+            if (!projects.IsSuccess)
+                return BadRequest(projects);
+            var models = projects.Model.Select(u => u.ToDto()).ToList();
+            return Ok(models);
         }
     }
 }

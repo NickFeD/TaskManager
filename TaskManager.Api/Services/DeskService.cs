@@ -1,18 +1,18 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaskManager.Api.Data;
 using TaskManager.Api.Entity;
-using TaskManager.Api.Exceptions;
 using TaskManager.Api.Services.Abstracted;
 using TaskManager.Command.Models;
 using Task = System.Threading.Tasks.Task;
 
 namespace TaskManager.Api.Services
 {
-    public class DeskService(ApplicationContext context) : ICRUDServiceAsync<DeskModel>
+    public class DeskService : ICRUDService<DeskModel>, ICRUDServiceAsync<DeskModel>
     {
-        private readonly ApplicationContext _context = context;
+        private readonly ApplicationContext _context;
+        public DeskService(ApplicationContext context){ _context = context; }
 
-        public async Task<DeskModel> CreateAsync(DeskModel model)
+        public Response<DeskModel> Create(DeskModel model)
         {
             var desk = new Desk()
             {
@@ -22,49 +22,62 @@ namespace TaskManager.Api.Services
                 ProjectId = model.ProjectId,
             };
             _context.Desks.Add(desk);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
             model.Id = desk.Id;
-            return model;
+            return new() { IsSuccess = true, Model = model };
         }
 
-        public async Task DeleteAsync(int id)
-        {
-            var countDelete = await _context.Desks.Where(d => d.Id == id).ExecuteDeleteAsync();
+        public Task<Response<DeskModel>> CreateAsync(DeskModel model) 
+            => Task.FromResult(Create(model));
 
-            if (countDelete < 1)
-                throw new NotFoundException("Not found desk");
+        public Response Delete(int id)
+        {
+            var deskToDelete = _context.Desks.Find(id);
+            if (deskToDelete is null)
+                return new() { IsSuccess = false, Reason = "No desk" };
+            _context.Desks.Remove(deskToDelete);
+            _context.SaveChanges();
+            return new() { IsSuccess = true };
         }
 
-        public async Task<List<DeskModel>> GetAllAsync()
+        public Task<Response> DeleteAsync(int id)
+            => Task.FromResult(Delete(id));
+
+        public Response< List<DeskModel>> GetAll()
         {
-            var desks = await _context.Desks.AsNoTracking().Select(d => d.ToDto()).ToListAsync();
-
-            if (desks.Count < 1)
-                throw new NotFoundException("Not found desks");
-
-            return desks;
+            var desks = _context.Desks.AsNoTracking().Select(d => d.ToDto()).ToList();
+            if (desks is null)
+                return new() { IsSuccess = false, Reason = "No desks" };
+            return new() { IsSuccess = true, Model = desks };
         }
 
-        public async Task<DeskModel> GetByIdAsync(int id)
-        {
-            var desk = await _context.Desks.AsNoTracking().FirstOrDefaultAsync(p => p.Id.Equals(id));
+        public Task<Response<List<DeskModel>>> GetAllAsync() 
+            => Task.FromResult(GetAll());
 
+        public Response<DeskModel> GetById(int id)
+        {
+            var desk = _context.Desks.AsNoTracking().FirstOrDefault(p => p.Id.Equals(id));
             if (desk is null)
-                throw new NotFoundException("Not found desk");
-
-            return desk.ToDto();
+                return new() { IsSuccess = false, Reason = "No desk" };
+            return new() { IsSuccess = true, Model = desk.ToDto()};
         }
 
-        public async Task UpdateAsync(DeskModel model)
+        public Task<Response<DeskModel>> GetByIdAsync(int id)
+            =>Task.FromResult(GetById(id));
+
+        public Response Update(DeskModel model)
         {
-            var countUpdate = await _context.Desks.Where(d => d.Id == model.Id)
-                .ExecuteUpdateAsync(setter => setter
-                .SetProperty(o => o.Description, model.Description)
-                .SetProperty(o => o.Name, model.Name)
-                .SetProperty(o => o.ProjectId, model.ProjectId));
-
-            if (countUpdate < 1)
-                throw new NotFoundException("Not found desk");
+            var deskToUpdate = _context.Desks.Find(model.Id);
+            if (deskToUpdate is null)
+                return new() { IsSuccess = false, Reason = "No desk" };
+            deskToUpdate.Description = model.Description;
+            deskToUpdate.Name = model.Name;
+            deskToUpdate.ProjectId = model.ProjectId;
+            _context.SaveChanges();
+            return new() { IsSuccess = true };
         }
+
+        public Task<Response> UpdateAsync(DeskModel model)
+            => Task.FromResult(Update(model));
     }
 }

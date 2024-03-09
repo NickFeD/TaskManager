@@ -1,18 +1,19 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaskManager.Api.Data;
 using TaskManager.Api.Entity;
-using TaskManager.Api.Exceptions;
 using TaskManager.Api.Services.Abstracted;
 using TaskManager.Command.Models;
 using Task = TaskManager.Api.Entity.Task;
 
 namespace TaskManager.Api.Services
 {
-    public class TaskService(ApplicationContext context) : ICRUDServiceAsync<TaskModel>
+    public class TaskService : ICRUDService<TaskModel>,ICRUDServiceAsync<TaskModel>
     {
-        private readonly ApplicationContext _context = context;
+        private readonly ApplicationContext _context;
 
-        public async Task<TaskModel> CreateAsync(TaskModel model)
+        public TaskService(ApplicationContext context) { _context = context;  }
+
+        public Response<TaskModel> Create(TaskModel model)
         {
             var task = new Task()
             {
@@ -25,50 +26,63 @@ namespace TaskManager.Api.Services
                 СreatorId = model.СreatorId,
             };
             _context.Tasks.Add(task);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
             model.Id = task.Id;
-            return model;
+            return new() { IsSuccess = true, Model = model };
         }
 
-        public async System.Threading.Tasks.Task DeleteAsync(int id)
-        {
-            var countDelete = await _context.Tasks.Where(d => d.Id == id).ExecuteDeleteAsync();
+        public Task<Response<TaskModel>> CreateAsync(TaskModel model)
+            => System.Threading.Tasks.Task.FromResult(Create(model));
 
-            if (countDelete < 1)
-                throw new NotFoundException("Not found task");
+        public Response Delete(int id)
+        {
+            var taskToDelete = _context.Tasks.Find(id);
+            if (taskToDelete is null)
+                return new() { IsSuccess = false, Reason = "Task not found" };
+            _context.Tasks.Remove(taskToDelete);
+            _context.SaveChanges();
+            return new() { IsSuccess = true };
         }
 
-        public async Task<List<TaskModel>> GetAllAsync()
+        public Task<Response> DeleteAsync(int id)
+            => System.Threading.Tasks.Task.FromResult(Delete(id));
+
+        public Response< List<TaskModel>> GetAll()
         {
-            var desks = await _context.Tasks.AsNoTracking().Select(d => d.ToDto()).ToListAsync();
-
-            if (desks.Count < 1)
-                throw new NotFoundException("Not found tasks");
-
-            return desks;
+            var tasks = _context.Tasks.AsNoTracking().Select(t => t.ToDto()).ToList();
+            if (tasks is null)
+                return new() { IsSuccess = false, Reason = "No tasks" };
+            return new() { IsSuccess = true, Model = tasks };
         }
 
-        public async Task<TaskModel> GetByIdAsync(int id)
-        {
-            var task = await _context.Tasks.AsNoTracking().FirstOrDefaultAsync(p => p.Id.Equals(id));
+        public Task<Response<List<TaskModel>>> GetAllAsync()
+            => System.Threading.Tasks.Task.FromResult(GetAll());
 
+        public Response<TaskModel> GetById(int id)
+        {
+            var task = _context.Tasks.AsNoTracking().FirstOrDefault(p => p.Id.Equals(id));
             if (task is null)
-                throw new NotFoundException("Not found task");
-
-            return task.ToDto();
+                return new() { IsSuccess = false, Reason = "No user" };
+            return new() { IsSuccess = true, Model = task.ToDto() };
         }
 
-        public async System.Threading.Tasks.Task UpdateAsync(TaskModel model)
+        public Task<Response<TaskModel>> GetByIdAsync(int id)
+            => System.Threading.Tasks.Task.FromResult(GetById(id));
+
+        public Response Update(TaskModel model)
         {
-            var countUpdate = await _context.Tasks.Where(d => d.Id == model.Id)
-                 .ExecuteUpdateAsync(setter => setter
-                 .SetProperty(o => o.StartDate, model.StartDate)
-                 .SetProperty(o => o.EndDate, model.EndDate)
-                 .SetProperty(o => o.Name, model.Name)
-                 .SetProperty(o => o.Description, model.Description));
-
-            if (countUpdate < 1)
-                throw new NotFoundException("Not found task");
+            var taskToUpdate = _context.Tasks.Find(model.Id);
+            if (taskToUpdate is null)
+                return new() { IsSuccess = false, Reason = "There is no project" };
+            taskToUpdate.StartDate = model.StartDate;
+            taskToUpdate.EndDate = model.EndDate;
+            taskToUpdate.Description = model.Description;
+            taskToUpdate.Name = model.Name;
+            _context.SaveChanges();
+            return new() { IsSuccess = true };
         }
+
+        public Task<Response> UpdateAsync(TaskModel model)
+        => System.Threading.Tasks.Task.FromResult(Update(model));
     }
 }
