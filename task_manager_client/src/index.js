@@ -1,15 +1,40 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './page/App';
+import './styles.css';
 import reportWebVitals from './reportWebVitals';
 import ThemeProvider from './providers/ThemeProvider'
+import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import Root from './routes/root';
+import RegisterPage from './page/RegisterPage';
+import LoginPage from './page/LoginPage';
+import Main from './routes/main'
+
+const router = createBrowserRouter([
+    {
+        path: "/",
+        element: <Root />,
+        //loader: rootLoader,
+        children: [
+            { index: true, element: <Main />, },
+        ],
+    },
+    {
+        path: "login",
+        element: <LoginPage />,
+        //loader: teamLoader,
+    },
+    {
+        path: "registration",
+        element: <RegisterPage />,
+        //loader: teamLoader,
+    },
+]);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
     <React.StrictMode>
         <ThemeProvider>
-            <App />
+            <RouterProvider router={router} />
         </ThemeProvider>
     </React.StrictMode>
 );

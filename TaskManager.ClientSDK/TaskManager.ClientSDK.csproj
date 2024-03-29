@@ -1,13 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <IncludeGeneratorSharedCode>True</IncludeGeneratorSharedCode>
+    <RestoreAdditionalProjectSources>https://azuresdkartifacts.blob.core.windows.net/azure-sdk-tools/index.json</RestoreAdditionalProjectSources>
   </PropertyGroup>
-
+  <ItemGroup>
+    <PackageReference Include="Azure.Core" Version="1.36.0" />
+    <PackageReference Include="Azure.Identity" Version="1.10.4" />
+    <PackageReference Include="JsonSubTypes" Version="2.0.1" />
+    <PackageReference Include="Microsoft.Azure.AutoRest.CSharp" Version="3.0.0-beta.20210218.1" />
+    <PackageReference Include="Microsoft.Kiota.Abstractions" Version="1.7.11" />
+    <PackageReference Include="Microsoft.Kiota.Http.HttpClientLibrary" Version="1.3.7" />
+    <PackageReference Include="Microsoft.Kiota.Serialization.Form" Version="1.1.5" />
+    <PackageReference Include="Microsoft.Kiota.Serialization.Json" Version="1.1.8" />
+    <PackageReference Include="Microsoft.Kiota.Serialization.Multipart" Version="1.1.3" />
+    <PackageReference Include="Microsoft.Kiota.Serialization.Text" Version="1.1.4" />
+    <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.24" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Polly" Version="8.3.1" />
+    <PackageReference Include="RestSharp" Version="110.2.0" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TaskManager.Command.Models\TaskManager.Command.Models.csproj" />
   </ItemGroup>
-
+  <ItemGroup>
+    <Folder Include="GenTest\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="test\Swagger.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Swagger.json</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="GenTest\Swagger.json">
+      <Generator>SwaggerCodeGenerator</Generator>
+    </None>
+    <None Update="test\Swagger.json">
+      <Generator>RefitterCodeGenerator</Generator>
+      <LastGenOutput>Swagger.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
 </Project>

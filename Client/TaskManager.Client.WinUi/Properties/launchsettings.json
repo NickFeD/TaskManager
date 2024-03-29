@@ -1,0 +1,10 @@
+﻿{
+    "profiles": {
+      "TaskManager.Client.WinUi (Package)": {
+        "commandName": "MsixPackage"
+      },
+      "TaskManager.Client.WinUi (Unpackaged)": {
+        "commandName": "Project"
+      }
+    }
+}

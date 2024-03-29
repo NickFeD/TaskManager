@@ -24,7 +24,7 @@ namespace TaskManager.Api.Controllers
         /// <param name="authRequest"></param>
         /// <returns></returns>
         [HttpPost("[action]")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response<AuthResponse>),StatusCodes.Status200OK)]
         [ProducesDefaultResponseType(typeof(string))]
         public async Task<IActionResult> AuthToken([FromBody] AuthRequest authRequest)
         {
