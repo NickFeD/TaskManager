@@ -3,13 +3,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using System.Text;
-using TaskManager.Api.Data;
 using TaskManager.Api.ExceptionHandling;
-using TaskManager.Api.Services;
-using TaskManager.Api.Services.Abstracted;
+using TaskManager.Core.Contracts.Repository;
+using TaskManager.Core.Contracts.Services;
+using TaskManager.Infrastructure.Persistence;
+using TaskManager.Infrastructure.Persistence.Repository;
+using TaskManager.Infrastructure.Services;
 
 namespace TaskManager.Api
 {
@@ -31,7 +32,7 @@ namespace TaskManager.Api
 
             services.AddSwaggerGen(options =>
             {
-                options.SwaggerDoc("v1", new OpenApiInfo { Title = "Task Manager API", Version = "v1" });
+                options.SwaggerDoc("v1", new OpenApiInfo { Title = "TaskEntity Manager API", Version = "v1" });
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Description = "This site use Bearer token and you have to pass" +
@@ -91,7 +92,7 @@ namespace TaskManager.Api
                     jwtOptions.Events.OnTokenValidated = async (context) =>
                     {
                         var ipAddress = context.Request.HttpContext.Connection.RemoteIpAddress!.ToString();
-                        var jwtService = context.Request.HttpContext.RequestServices.GetService<IJwtServices>()!;
+                        var jwtService = context.Request.HttpContext.RequestServices.GetService<IJwtService>()!;
                         var jwtToken = context.SecurityToken as JsonWebToken;
                         if (!await jwtService.IsTokenValid(jwtToken!.EncodedToken, ipAddress))
                             context.Fail("Invalid token details.");
@@ -100,7 +101,21 @@ namespace TaskManager.Api
                 });
 
             services.AddCors(c => c.AddPolicy("CorsPolicy", bulder => bulder.WithOrigins("http://localhost:3000")));
-            services.AddTransient<IJwtServices, JwtServices>();
+
+
+            //add repositories
+            services.AddTransient<IUserRefreshTokenRepository, UserRefreshTokenRepository>();
+            services.AddTransient<IParticipantRepository, ParticipantRepository>();
+            services.AddTransient<IProjectRepository, ProjectRepository>();
+            services.AddTransient<IBoardRepository, BoardRepository>();
+            services.AddTransient<IRoleRepository, RoleRepository>();
+            services.AddTransient<ITaskRepository, TaskRepository>();
+            services.AddTransient<IUserRepository, UserRepository>();
+
+            services.AddTransient<IJwtService, JwtService>();
+            services.AddTransient<IEncryptService, EncryptService>();
+            services.AddTransient<IUserService, UserService>();
+            services.AddTransient<IBoardService, BoardService>();
 
             // Add services to the container.
             services.AddConnections();
@@ -108,7 +123,8 @@ namespace TaskManager.Api
             string? connection = Configuration.GetConnectionString("DefaultConnection");
             connection = connection is null ? "" : connection;
 
-            services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(connection));
+            //services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(connection));
+            services.AddDbContext<TaskManagerDbContext>(options => options.UseSqlServer(connection));
 
             services.AddControllers();
         }
@@ -124,7 +140,7 @@ namespace TaskManager.Api
 
             if (env.IsDevelopment())
             {
-                
+
             }
             app.UseHttpsRedirection();
 
@@ -133,7 +149,7 @@ namespace TaskManager.Api
             app.UseAuthentication();
 
             app.UseAuthorization();
-            
+
 
             app.UseExceptionHandler(opt => { });
 

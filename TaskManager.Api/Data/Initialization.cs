@@ -84,14 +84,14 @@ namespace TaskManager.Api.Data
             return desks;
         }
 
-        public List<Entity.Task> InitializationTask(int numTask)
+        public List<Entity.TaskEntity> InitializationTask(int numTask)
         {
-            List<Entity.Task> tasks = new();
+            List<Entity.TaskEntity> tasks = new();
             List<User> users = _context.Users.ToList();
             List<Desk> desks = _context.Desks.ToList();
             for (int i = 0; i < numTask; i++)
             {
-                var task = new Entity.Task()
+                var task = new Entity.TaskEntity()
                 {
                     CreationData = DateTime.Now,
                     Description = Faker.Lorem.Sentence(),
