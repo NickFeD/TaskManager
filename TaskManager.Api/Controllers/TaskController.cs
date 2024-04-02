@@ -1,19 +1,17 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskManager.Api.Controllers.Abstracted;
-using TaskManager.Api.Data;
-using TaskManager.Api.Services;
-using TaskManager.Command.Models;
-using Microsoft.AspNetCore.Http;
+using TaskManager.Core.Models;
+using TaskManager.Core.Contracts.Services;
 
 namespace TaskManager.Api.Controllers
 {
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class TaskController(ApplicationContext context) : ControllerBase, ICRUDController<TaskModel>
-    {
-        private readonly TaskService _service = new(context);
+    public class TaskController(ITaskService taskService) : BaseController
+    { 
+        private readonly ITaskService _taskService = taskService;
 
         /// <summary>
         /// Create a task
@@ -24,7 +22,7 @@ namespace TaskManager.Api.Controllers
         [ProducesResponseType(typeof(TaskModel), StatusCodes.Status201Created)]
         public async Task<IActionResult> Create([FromBody] TaskModel model)
         {
-            var modelToCreate = await _service.CreateAsync(model);
+            var modelToCreate = await _taskService.CreateAsync(model);
             return CreatedAtAction(nameof(GetById), new { id = modelToCreate.Id }, modelToCreate);
         }
 
@@ -36,9 +34,9 @@ namespace TaskManager.Api.Controllers
         [HttpDelete]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesDefaultResponseType]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(Guid id)
         {
-            await _service.DeleteAsync(id);
+            await _taskService.DeleteAsync(id);
             return NoContent();
         }
 
@@ -49,7 +47,7 @@ namespace TaskManager.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var response = await _service.GetAllAsync();
+            var response = await _taskService.GetAllAsync();
             return Ok(response);
         }
 
@@ -59,9 +57,9 @@ namespace TaskManager.Api.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetById(Guid id)
         {
-            var response = await _service.GetByIdAsync(id);
+            var response = await _taskService.GetByIdAsync(id);
             return Ok(response);
         }
 
@@ -69,12 +67,20 @@ namespace TaskManager.Api.Controllers
         /// Update the task
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="model"></param>
+        /// <param name="updateModel"></param>
         /// <returns></returns>
         [HttpPut]
-        public async Task<IActionResult> Update(int id, TaskModel model)
+        public async Task<IActionResult> Update(Guid id, TaskUpdateModel updateModel)
         {
-            await _service.UpdateAsync(model);
+            var model = new TaskModel()
+            {
+                Description = updateModel.Description,
+                Name = updateModel.Name,
+                BoardId = updateModel.BoardId,
+                EndDate = updateModel.EndDate,
+                StartDate = updateModel.StartDate,
+            };
+            await _taskService.UpdateAsync(model);
             return Ok();
         }
     }

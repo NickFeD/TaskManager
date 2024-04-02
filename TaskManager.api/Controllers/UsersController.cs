@@ -1,19 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TaskManager.Api.Controllers.Abstracted;
-using TaskManager.Api.Data;
-using TaskManager.Api.Services;
-using TaskManager.Command.Models;
-using Task = System.Threading.Tasks.Task;
-using Microsoft.AspNetCore.Http;
+using TaskManager.Core.Contracts.Services;
 
 namespace TaskManager.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UsersController(ApplicationContext context) : ControllerBase
+    public class UsersController(IUserService userService) : ControllerBase
     {
-        private readonly UserService _service = new(context);
+        private readonly IUserService _userService = userService;
 
         /// <summary>
         /// Get a user by id
@@ -22,9 +17,9 @@ namespace TaskManager.Api.Controllers
         /// <returns></returns>
         [Authorize]
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetById(Guid id)
         {
-            var userToGet = await _service.GetByIdAsync(id);
+            var userToGet = await _userService.GetByIdAsync(id);
             return Ok(userToGet);
         }
 
@@ -35,9 +30,9 @@ namespace TaskManager.Api.Controllers
         /// <param name="userId"></param>
         /// <returns></returns>
         [HttpGet("{userId}/projects")]
-        public async Task<IActionResult> GetProjectByUserId(int userId)
+        public async Task<IActionResult> GetProjectByUserId(Guid userId)
         {
-            var projects = await _service.GetProjectsByUserIdAsync(userId);
+            var projects = await _userService.GetProjectsByUserIdAsync(userId);
             return Ok(projects);
         }
     }

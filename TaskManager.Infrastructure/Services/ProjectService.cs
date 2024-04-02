@@ -1,30 +1,33 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TaskManager.Api.Data;
-using TaskManager.Api.Entity;
-using TaskManager.Api.Exceptions;
-using TaskManager.Infrastructure.Services.Abstracted;
-using TaskManager.Command.Models;
-using Task = System.Threading.Tasks.Task;
+﻿using TaskManager.Core.Contracts.Repository;
+using TaskManager.Core.Contracts.Services;
+using TaskManager.Core.Entities;
+using TaskManager.Core.Exceptions;
+using TaskManager.Core.Extentions;
+using TaskManager.Core.Models;
+using TaskManager.Core.Models.Project;
 
 namespace TaskManager.Infrastructure.Services
 {
-    public class ProjectService(ApplicationContext context) : ICRUDServiceAsync<ProjectModel>
+    public class ProjectService(IProjectRepository projectRepository) : IProjectService
     {
-        private readonly ApplicationContext _context = context;
+        private readonly IProjectRepository _projectRepository = projectRepository;
 
-        public Response Update(ProjectModel model)
+        public async Task<ProjectModel> UpdateAsync(Guid id, ProjectUpdateModel model)
         {
-            var projectToUpdate = _context.Projects.Find(model.Id);
-            if (projectToUpdate is null)
-                return new() { IsSuccess = false, Reason = "There is no project" };
-            projectToUpdate.Status = model.Status;
-            projectToUpdate.Description = model.Description;
-            projectToUpdate.Name = model.Name;
-            _context.SaveChanges();
-            return new() { IsSuccess = true };
+            if (await _projectRepository.ContainsdAsync(id))
+                throw new NotFoundException("progect not found");
+
+            Project project = new()
+            {
+                Id = id,
+                Name = model.Name,
+                Description = model.Description,
+                Status = model.Status,
+            };
+            return (await _projectRepository.UpdateAsync(project)).ToModel();
         }
 
-        public async Task<Response> AddUsers(int projectId, int[] usersId)
+        public async Task<Response> AddUsers(Guid projectId,Guid roleId, params Guid[] usersId)
         {
             var participants = new ProjectParticipant[usersId.Length];
             for (int i = 0; i < usersId.Length; i++)
@@ -33,104 +36,67 @@ namespace TaskManager.Infrastructure.Services
                 {
                     UserId = usersId[i],
                     ProjectId = projectId,
+                    RoleId = roleId,
                 };
                 participants[i] = participant;
             }
-            _context.AddRange(participants);
-            await _context.SaveChangesAsync();
+            await _projectRepository.AddRangeAsync(participants);
             return new() { IsSuccess = true };
         }
 
-        public Task<Response<List<UserRoleModel>>> GetUsers(int projectId)
+        public async Task<IEnumerable<ProjectModel>> GetAllAsync()
         {
-            var participants = _context.Participants.AsNoTracking().Include(p => p.Role).Include(p => p.User).Where(p=>p.ProjectId.Equals(projectId)).ToList();
-            if (participants is null)
-                return Task.FromResult( new Response<List<UserRoleModel>>() { IsSuccess= false, Reason="Not Found" });
-            List<UserRoleModel> users = new();
-            for (int i = 0; i < participants.Count; i++)
-            {
-#pragma warning disable CS8602 // Разыменование вероятной пустой ссылки.
-                users.Add(new() { Role = participants[i].Role.ToDto(), User = participants[i].User.ToDto() });
-#pragma warning restore CS8602 // Разыменование вероятной пустой ссылки.
-            }
-            return Task.FromResult( new Response<List<UserRoleModel>>() { IsSuccess = true, Model = users });
+            var project = await _projectRepository.GetAllAsync();
+
+            return project.Select(p=>p.ToModel());
         }
 
-        public async Task<List<ProjectModel>> GetAllAsync()
+        public async Task<ProjectModel> GetByIdAsync(Guid id)
         {
-            var project = await _context.Projects.AsNoTracking().Select(d => d.ToDto()).ToListAsync();
+            var project = await _projectRepository.GetByIdAsync(id);
 
-            if (project.Count < 1)
-                throw new NotFoundException("Not found projects");
-
-            return project;
-        }
-
-        public async Task<ProjectModel> GetByIdAsync(int id)
-        {
-            var project = await _context.Projects.AsNoTracking().FirstOrDefaultAsync(p => p.Id.Equals(id));
-
-            if (project is null)
-                throw new NotFoundException("Not found project");
-
-            return project.ToDto();
+            return project.ToModel();
         }
 
         public async Task<ProjectModel> CreateAsync(ProjectModel model)
         {
-            var project = new Project()
-            {
-                Name = model.Name,
-                Status = model.Status,
-                CreatorId = model.CreatorId,
-                CreationData = DateTime.UtcNow,
-                Description = model.Description,
-            };
-            _context.Projects.Add(project);
-
-
+            
             var role = new Role()
             {
                 Name = "Admin",
-                Project = project,
                 AllowedAddUsersProject = true,
                 AllowedDeleteProject = true,
                 AllowedEditProject = true,
 
             };
-            _context.Roles.Add(role);
-
             var participant = new ProjectParticipant()
             {
                 Role = role,
-                Project = project,
-                UserId = project.CreatorId ?? 0,
+                UserId = model.CreatorId,
             };
-            _context.Participants.Add(participant);
+            var project = new Project()
+            {
+                Name = model.Name,
+                Status = Core.Enums.ProjectStatus.InProgress,
+                CreatorId = model.CreatorId,
+                CreationData = DateTime.UtcNow,
+                Description = model.Description,
+            };
+            role.Project = project;
+            role.Participants.Add(participant);
 
-            await _context.SaveChangesAsync();
+            participant.Project = project;
+            participant.Role = role;
+
+            project.Participants.Add(participant);
+            project.Roles.Add(role);
+
+            project = await _projectRepository.AddAsync(project);
             model.Id = project.Id;
             return model;
         }
 
-        public async Task UpdateAsync(ProjectModel model)
-        {
-            var countUpdate = await _context.Projects.Where(d => d.Id == model.Id)
-                .ExecuteUpdateAsync(setter => setter
-                .SetProperty(o => o.Status, model.Status)
-                .SetProperty(o => o.Description, model.Description)
-                .SetProperty(o => o.Name, model.Name));
-
-            if (countUpdate < 1)
-                throw new NotFoundException("Not found project");
-        }
-
-        public async Task DeleteAsync(int id)
-        {
-            var countDelete = await _context.Projects.Where(d => d.Id == id).ExecuteDeleteAsync();
-
-            if (countDelete < 1)
-                throw new NotFoundException("Not found desk");
-        }
+        public Task DeleteAsync(Guid id)
+            => _projectRepository.DeleteAsync(id);
     }
 }

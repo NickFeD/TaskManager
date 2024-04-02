@@ -3,7 +3,7 @@
 namespace TaskManager.Core.Entities;
 
 [Table("participants")]
-public class ProjectParticipant:Entity<Guid>
+public class ProjectParticipant:IEntity<Guid>
 {
     public Guid UserId { get; set; }
 
@@ -15,9 +15,9 @@ public class ProjectParticipant:Entity<Guid>
     [ForeignKey(nameof(ProjectId))]
     public Project? Project { get; set; }
 
-    public Guid? UserRoleId { get; set; }
+    public Guid RoleId { get; set; }
 
-    [ForeignKey(nameof(UserRoleId))]
+    [ForeignKey(nameof(RoleId))]
     public Role? Role { get; set; }
 
     public override bool Equals(object? obj)

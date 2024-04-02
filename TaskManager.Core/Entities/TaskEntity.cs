@@ -3,7 +3,7 @@
 namespace TaskManager.Core.Entities;
 
 [Table("tasks")]
-public class TaskEntity: Entity<Guid>
+public class TaskEntity: IEntity<Guid>
 {
     public required string Name { get; set; }
     public string? Description { get; set; }
@@ -19,4 +19,5 @@ public class TaskEntity: Entity<Guid>
 
     [ForeignKey(nameof(BoardId))]
     public Board? Board { get; set; }
+    public Guid Id { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 }

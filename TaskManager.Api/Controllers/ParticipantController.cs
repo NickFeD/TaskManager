@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskManager.Api.Controllers.Abstracted;
-using TaskManager.Api.Data;
-using TaskManager.Api.Services;
-using TaskManager.Command.Models;
+using TaskManager.Core.Contracts.Services;
+using TaskManager.Core.Models;
 using Microsoft.AspNetCore.Http;
 
 namespace TaskManager.Api.Controllers
@@ -11,9 +10,9 @@ namespace TaskManager.Api.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class ParticipantController(ApplicationContext context) : ControllerBase, ICRUDController<ProjectParticipantModel>
+    public class ParticipantController(IParticipantService participantService) : BaseController, ICRUDController<ParticipantModel,Guid>
     {
-        private readonly ParticipantService _service = new(context);
+        private readonly IParticipantService _participantService = participantService;
 
         /// <summary>
         /// Create a participant
@@ -23,9 +22,9 @@ namespace TaskManager.Api.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesDefaultResponseType]
-        public async Task<IActionResult> Create([FromBody] ProjectParticipantModel model)
+        public async Task<IActionResult> Create([FromBody] ParticipantModel model)
         {
-            var modelToCreate = await _service.CreateAsync(model);
+            var modelToCreate = await _participantService.CreateAsync(model);
             return CreatedAtAction(nameof(GetById), new { id = modelToCreate.Id }, modelToCreate);
         }
 
@@ -35,10 +34,12 @@ namespace TaskManager.Api.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete]
-        public async Task<IActionResult> Delete(int id)
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesDefaultResponseType]
+        public async Task<IActionResult> Delete(Guid id)
         {
-            await _service.DeleteAsync(id);
-            return Ok();
+            await _participantService.DeleteAsync(id);
+            return NoContent();
         }
 
         /// <summary>
@@ -48,7 +49,7 @@ namespace TaskManager.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var response = await _service.GetAllAsync();
+            var response = await _participantService.GetAllAsync();
             return Ok(response);
         }
 
@@ -58,9 +59,9 @@ namespace TaskManager.Api.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetById(Guid id)
         {
-            var response = await _service.GetByIdAsync(id);
+            var response = await _participantService.GetByIdAsync(id);
             return Ok(response);
         }
 
@@ -71,12 +72,12 @@ namespace TaskManager.Api.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPut]
-        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Update(int id, ProjectParticipantModel model)
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesDefaultResponseType]
+        public async Task<IActionResult> Update(Guid id, ParticipantModel model)
         {
-            await _service.UpdateAsync(model);
-            return Ok();
+            await _participantService.UpdateAsync(model);
+            return NoContent();
         }
     }
 }

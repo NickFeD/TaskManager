@@ -94,9 +94,7 @@ namespace TaskManager.Api
                         var ipAddress = context.Request.HttpContext.Connection.RemoteIpAddress!.ToString();
                         var jwtService = context.Request.HttpContext.RequestServices.GetService<IJwtService>()!;
                         var jwtToken = context.SecurityToken as JsonWebToken;
-                        if (!await jwtService.IsTokenValid(jwtToken!.EncodedToken, ipAddress))
-                            context.Fail("Invalid token details.");
-
+                        context.HttpContext.Items["user"]= await jwtService.IsTokenValid(jwtToken!.EncodedToken, ipAddress);
                     };
                 });
 
@@ -112,10 +110,15 @@ namespace TaskManager.Api
             services.AddTransient<ITaskRepository, TaskRepository>();
             services.AddTransient<IUserRepository, UserRepository>();
 
-            services.AddTransient<IJwtService, JwtService>();
-            services.AddTransient<IEncryptService, EncryptService>();
-            services.AddTransient<IUserService, UserService>();
             services.AddTransient<IBoardService, BoardService>();
+            services.AddTransient<IEncryptService, EncryptService>();
+            services.AddTransient<IJwtService, JwtService>();
+            services.AddTransient<IParticipantService, ParticipantService>();
+            services.AddTransient<IProjectService, ProjectService>();
+            services.AddTransient<IRoleService, RoleService>();
+            services.AddTransient<ITaskService, TaskService>();
+            services.AddTransient<IUserService, UserService>();
+
 
             // Add services to the container.
             services.AddConnections();

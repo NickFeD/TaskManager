@@ -24,7 +24,7 @@ namespace TaskManager.Infrastructure.Services
         private readonly DateTime _expiresRefreshToken = DateTime.UtcNow.AddMonths(2);
 
         #region Public Metod
-        public async Task<Response<AuthResponse>> GetRefreshTokenAsync(string ipAddress, Guid userId, string email)
+        public async Task<AuthResponse> GetRefreshTokenAsync(string ipAddress, Guid userId, string email)
         {
             var refreshToken = GenerateRefreshToken();
             var accessToken = GenerateToken(email);
@@ -32,27 +32,29 @@ namespace TaskManager.Infrastructure.Services
             return await SaveTokenDetails(ipAddress, userId, accessToken, refreshToken);
         }
 
-        public async Task<Response<AuthResponse>?> GetTokenAsync(AuthRequest authRequest, string ipAddress)
+        public async Task<AuthResponse> GetTokenAsync(AuthRequest authRequest, string ipAddress)
         {
             var user = await _userRepository.GetUserByEmail(authRequest.Email);
             var hashPassword = _encryptService.HashPassword(authRequest.Password, user.Salt);
 
             if (user.Password.SequenceEqual(hashPassword))
-                throw new BadRequestException("incorrect email address or password");
+                throw new BadRequestException("The email or password is incorrect");
 
             string tokenString = GenerateToken(user.Email);
             string refreshTokenString = GenerateRefreshToken();
             return await SaveTokenDetails(ipAddress, user.Id, tokenString, refreshTokenString);
         }
 
-        public async Task<bool> IsTokenValid(string accessToken, string ipAddress)
+        public async Task<User> IsTokenValid(string accessToken, string ipAddress)
         {
-            return await _refreshTokenRepository.ContainsdByConditionAsync(x => x.Token == accessToken && x.IpAddress == ipAddress);
+            var refreshToken = await _refreshTokenRepository.GetFirstByConditionAsync(x => x.Token == accessToken && x.IpAddress == ipAddress);
+            var user = await _userRepository.GetByIdAsync(refreshToken.UserId);
+            return user;
         }
         #endregion
 
         #region Private Metod
-        private async Task<Response<AuthResponse>> SaveTokenDetails(string ipAddress, Guid userId, string tokenString, string refreshTokenString)
+        private async Task<AuthResponse> SaveTokenDetails(string ipAddress, Guid userId, string tokenString, string refreshTokenString)
         {
             var refreshToken = await _refreshTokenRepository.GetFirstByConditionAsync(x => x.IpAddress == ipAddress && x.UserId == userId);
             if (refreshToken is null)
@@ -79,16 +81,12 @@ namespace TaskManager.Infrastructure.Services
             }
 
 
-            return new Response<AuthResponse>
+            return new AuthResponse
             {
-                IsSuccess = true,
-                Model = new AuthResponse
-                {
-                    Token = tokenString,
-                    RefreshToken = refreshTokenString,
-                    ExpiresRefreshToken = _expiresRefreshToken,
-                    ExpiresToken = _expiresToken,
-                },
+                Token = tokenString,
+                RefreshToken = refreshTokenString,
+                ExpiresRefreshToken = _expiresRefreshToken,
+                ExpiresToken = _expiresToken,
             };
         }
 

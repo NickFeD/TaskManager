@@ -1,37 +1,36 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskManager.Api.Controllers.Abstracted;
-using TaskManager.Api.Data;
-using TaskManager.Api.Entity;
-using TaskManager.Api.Services;
-using TaskManager.Command.Models;
-using Microsoft.AspNetCore.Http;
-using System.Data;
+using TaskManager.Core.Contracts.Services;
+using TaskManager.Core.Models.Project;
 
 namespace TaskManager.Api.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route("api/My/Project")]
-    public class ProjectController(ApplicationContext context) : ControllerBase
+    [Route("api/Project")]
+    public class ProjectController(IProjectService projectService, IUserService userService) : BaseController
     {
-        private readonly ProjectService _service = new(context);
-        private readonly RoleService _roleService = new(context);
-        private readonly HttpContextHandlerService _httpHandler = new(context);
+        private readonly IProjectService _projectService = projectService;
+        private readonly IUserService _userService = userService;
 
         /// <summary>
         /// Create a project
         /// </summary>
-        /// <param name="model"></param>
+        /// <param name="createModel"></param>
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesDefaultResponseType]
-        public async Task<IActionResult> Create([FromBody] ProjectModel model)
+        public async Task<IActionResult> Create([FromBody] ProjectCreateModel createModel)
         {
-            var user = _httpHandler.GetUserAsNoTracking(HttpContext);
-            model.CreatorId = user.Id;
-            var modelToCreate = await _service.CreateAsync(model);
+            var model = new ProjectModel()
+            {
+                Name = createModel.Name,
+                Description = createModel.Description,
+                CreatorId = AuthUser.Id,
+            };
+            var modelToCreate = await _projectService.CreateAsync(model);
             return CreatedAtAction(nameof(GetById), new { id = modelToCreate.Id }, modelToCreate);
         }
 
@@ -41,9 +40,9 @@ namespace TaskManager.Api.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(Guid id)
         {
-            await _service.DeleteAsync(id);
+            await _projectService.DeleteAsync(id);
             return Ok();
         }
 
@@ -53,44 +52,38 @@ namespace TaskManager.Api.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetById(Guid id)
         {
-            var response = await _service.GetByIdAsync(id);
+            var response = await _projectService.GetByIdAsync(id);
             return Ok(response);
         }
 
         /// <summary>
         /// Edit the project
         /// </summary>
+        /// <param name="id"></param>
         /// <param name="model"></param>
         /// <returns></returns>
-        [HttpPut]
-        public async Task<IActionResult> Edit(ProjectModel model)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Edit(Guid id, ProjectUpdateModel model)
         {
-            await _service.UpdateAsync(model);
+            await _projectService.UpdateAsync(id, model);
             return Ok();
         }
 
 
         [HttpPost("{id}/Users")]
-        public async Task<IActionResult> AddUsers(int id, int[] usersId)
+        public async Task<IActionResult> AddUsers(Guid id, ProjectAddUsers addUsers)
         {
-            var response = await _service.AddUsers(id, usersId);
+            var response = await _projectService.AddUsers(id, addUsers.RoleId, addUsers.Usernames);
             return Ok(response);
         }
 
         [HttpGet("{id}/Users")]
-        public async Task<IActionResult> GetUsers(int id)
+        public async Task<IActionResult> GetUsers(Guid id)
         {
-            var response = await _service.GetUsers(id);
+            var response = await _userService.GetByProjectId(id);
             return Ok(response);
-        }
-
-        private bool IsValidate(bool? isValidate)
-        {
-            if (isValidate is null)
-                return false;
-            return (bool)isValidate;
         }
     }
 }

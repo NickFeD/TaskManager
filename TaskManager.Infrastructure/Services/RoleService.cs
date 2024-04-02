@@ -1,68 +1,38 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TaskManager.Api.Data;
-using TaskManager.Api.Entity;
-using TaskManager.Api.Exceptions;
-using TaskManager.Infrastructure.Services.Abstracted;
-using TaskManager.Command.Models;
-using Task = System.Threading.Tasks.Task;
+﻿using TaskManager.Core.Contracts.Repository;
+using TaskManager.Core.Contracts.Services;
+using TaskManager.Core.Extentions;
+using TaskManager.Core.Models;
 
 namespace TaskManager.Infrastructure.Services
 {
-    public class RoleService(ApplicationContext context) : ICRUDServiceAsync<RoleModel>
+    public class RoleService(IRoleRepository roleRepository) : IRoleService
     {
-        private readonly ApplicationContext _context = context;
+        private readonly IRoleRepository _roleRepository = roleRepository;
 
         public async Task<RoleModel> CreateAsync(RoleModel model)
         {
-            var userRole = new Role()
-            {
-                ProjectId = model.ProjectId,
-                Name = model.Name,
-            };
-            _context.Roles.Add(userRole);
-            await _context.SaveChangesAsync();
-            model.Id = userRole.Id;
+            model.Id = (await _roleRepository.AddAsync(model.ToEntity())).Id;
             return model;
         }
 
-        public async Task DeleteAsync(int id)
-        {
-            var countDelete = await _context.Roles.Where(d => d.Id == id).ExecuteDeleteAsync();
+        public Task DeleteAsync(Guid id)
+            => _roleRepository.DeleteAsync(id);
 
-            if (countDelete < 1)
-                throw new NotFoundException("Not found role");
+        public async Task<IEnumerable<RoleModel>> GetAllAsync()
+        {
+            var roles = await _roleRepository.GetAllAsync();
+            return roles.Select(r => r.ToModel());
         }
 
-        public async Task<List<RoleModel>> GetAllAsync()
+        public async Task<RoleModel> GetByIdAsync(Guid id)
         {
-            var roles = await _context.Roles.AsNoTracking().Select(d => d.ToDto()).ToListAsync();
-
-            if (roles.Count < 1)
-                throw new NotFoundException("Not found roles");
-
-            return roles;
+            var role = await _roleRepository.GetByIdAsync(id);
+            return role.ToModel();
         }
 
-        public async Task<RoleModel> GetByIdAsync(int id)
-        {
-            var role = await _context.Roles.AsNoTracking().FirstOrDefaultAsync(p => p.Id.Equals(id));
+        public Task UpdateAsync(RoleModel model)
+            => _roleRepository.UpdateAsync(model.ToEntity());
 
-            if (role is null)
-                throw new NotFoundException("Not found desk");
 
-            return role.ToDto();
-        }
-
-        public async Task UpdateAsync(RoleModel model)
-        {
-            var countUpdate = await _context.Roles.Where(d => d.Id == model.Id)
-                .ExecuteUpdateAsync(setter => setter
-                .SetProperty(o => o.Name, model.Name));
-
-            if (countUpdate < 1)
-                throw new NotFoundException("Not found role");
-        }
-
-        
     }
 }

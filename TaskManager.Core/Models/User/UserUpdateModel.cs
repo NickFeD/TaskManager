@@ -6,9 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using TaskManager.Core.Models.Abstracted;
 
-namespace TaskManager.Core.Models
+namespace TaskManager.Core.Models.User
 {
-    public class UserUpdateModel:Model<Guid>
+    public class UserUpdateModel
     {
         public string? FirstName { get; set; }
 

@@ -23,7 +23,7 @@ public class User : Entity<Guid>
 
     public byte[] Salt { get; set; } = [];
 
-    public DateTime RegistrationDate { get; set; } = DateTime.Now;
+    public DateTime RegistrationDate { get; set; }
 
     public DateTime LastLoginData { get; set; } = DateTime.Now;
 

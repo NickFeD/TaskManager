@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace TaskManager.Core.Contracts.Services
 {
-    public interface ICRUDServiceAsync<TModel,TId> where TModel : class
+    public interface ICRUDService<TModel,TId> where TModel : class
     {
-        Task<List<TModel>> GetAllAsync();
+        Task<IEnumerable<TModel>> GetAllAsync();
         Task<TModel> GetByIdAsync(TId id);
         Task<TModel> CreateAsync(TModel model);
         Task UpdateAsync(TModel model);

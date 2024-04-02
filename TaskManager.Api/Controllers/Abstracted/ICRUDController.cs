@@ -1,23 +1,23 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TaskManager.Command.Models.Abstracted;
+using TaskManager.Core.Models.Abstracted;
 
 namespace TaskManager.Api.Controllers.Abstracted
 {
-    interface ICRUDController<TModel> where TModel : Model
+    public interface ICRUDController<TModel,TId> where TModel : Model
     {
         [HttpGet]
-        Task<IActionResult> GetAll();
+        public Task<IActionResult> GetAll();
 
         [HttpGet("{id}")]
-        Task<IActionResult> GetById(int id);
+        public Task<IActionResult> GetById(TId id);
 
         [HttpPost]
-        Task<IActionResult> Create(TModel model);
+        public Task<IActionResult> Create(TModel model);
 
         [HttpPut("{id}")]
-        Task<IActionResult> Update(int id, TModel model);
+        public Task<IActionResult> Update(TId id, TModel model);
 
         [HttpDelete("{id}")]
-        Task<IActionResult> Delete(int id);
+        public Task<IActionResult> Delete(TId id);
     }
 }

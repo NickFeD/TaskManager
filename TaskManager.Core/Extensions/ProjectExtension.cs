@@ -1,5 +1,5 @@
 ﻿using TaskManager.Core.Entities;
-using TaskManager.Core.Models;
+using TaskManager.Core.Models.Project;
 
 namespace TaskManager.Core.Extentions;
 

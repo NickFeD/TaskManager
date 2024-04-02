@@ -5,16 +5,18 @@ using System.Text;
 using System.Threading.Tasks;
 using TaskManager.Core.Entities;
 using TaskManager.Core.Models;
+using TaskManager.Core.Models.Project;
+using TaskManager.Core.Models.User;
 
-namespace TaskManager.Core.Contracts.Services
+namespace TaskManager.Core.Contracts.Services;
+
+public interface IUserService
 {
-    public interface IUserService
-    {
-        Task DeleteAsync(Guid id);
-        Task<List<UserModel>> GetAllAsync();
-        Task<UserModel> GetByIdAsync(Guid id);
-        Task<List<ProjectModel>> GetProjectsByUserIdAsync(Guid userId);
-        Task<UserModel> Registration(User user);
-        Task UpdateAsync(UserUpdateModel model);
-    }
+    Task DeleteAsync(Guid id);
+    Task<List<UserModel>> GetAllAsync();
+    Task<UserModel> GetByIdAsync(Guid id);
+    Task<IEnumerable<UserRoleModel>> GetByProjectId(Guid projectId);
+    Task<IEnumerable<ProjectModel>> GetProjectsByUserIdAsync(Guid userId);
+    Task<UserModel> Registration(RegistrationModel user);
+    Task UpdateAsync(Guid Id, UserUpdateModel model);
 }

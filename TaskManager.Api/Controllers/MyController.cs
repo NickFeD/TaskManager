@@ -1,23 +1,19 @@
-﻿using Microsoft.AspNetCore.JsonPatch;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using TaskManager.Api.Data;
-using TaskManager.Api.Services;
-using TaskManager.Command.Models;
-
-
+using TaskManager.Api.Controllers.Abstracted;
+using TaskManager.Core.Contracts.Services;
+using TaskManager.Core.Extentions;
+using Microsoft.AspNetCore.Http;
+using TaskManager.Core.Models.User;
 
 namespace TaskManager.Api.Controllers
 {
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class MyController(ApplicationContext context) : ControllerBase
+    public class MyController(IUserService userService) : BaseController
     {
-        private readonly HttpContextHandlerService _httpHandler = new(context);
-        private readonly UserService _userService = new(context);
+        private readonly IUserService _userService = userService;
 
         /// <summary>
         /// Get information about the user who sent the request
@@ -26,13 +22,8 @@ namespace TaskManager.Api.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(UserModel), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetMy()
-        {
-            var user = await _httpHandler.GetUserAsync(HttpContext);
-            if (user is null)
-                return BadRequest("Сould not identify the user");
-            return Ok(user.ToDto());
-        }
+        public IActionResult GetMy()
+            => Ok(AuthUser.ToModel());
 
         /// <summary>
         /// Update your personal information
@@ -43,14 +34,10 @@ namespace TaskManager.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
         [ProducesDefaultResponseType]
-        public async Task<IActionResult> Update(UserModel userModel)
+        public async Task<IActionResult> Update(UserUpdateModel userModel)
         {
-            var user = await _httpHandler.GetUserAsync(HttpContext);
-            if (user is null)
-                return NotFound("Not Found User");
-            userModel.Id = user.Id;
-            var response = _userService.UpdateAsync(userModel);
-            return Ok(response);
+            await _userService.UpdateAsync(AuthUser.Id, userModel);
+            return Ok();
         }
 
         /// <summary>
@@ -60,17 +47,14 @@ namespace TaskManager.Api.Controllers
         /// <returns></returns>
         [HttpDelete]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesDefaultResponseType]
         public async Task<IActionResult> Delete(bool isConfirmed)
         {
             if (!isConfirmed)
                 return BadRequest("Not confirmed");
-            var userToDelete = await _httpHandler.GetUserAsync(HttpContext);
-            if (userToDelete is null)
-                return NotFound();
-            await _userService.DeleteAsync(userToDelete.Id);
-            return Ok();
+            await _userService.DeleteAsync(AuthUser.Id);
+            return NoContent();
         }
 
         /// <summary>
@@ -83,10 +67,7 @@ namespace TaskManager.Api.Controllers
         [ProducesDefaultResponseType]
         public async Task<IActionResult> GetMyProject()
         {
-            var user = _httpHandler.GetUser(HttpContext);
-            if (user is null)
-                return BadRequest("FATAL ERROR");
-            var projects = await _userService.GetProjectsByUserIdAsync(user.Id);
+            var projects = await _userService.GetProjectsByUserIdAsync(AuthUser.Id);
             return Ok(projects);
         }
     }

@@ -1,19 +1,18 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskManager.Api.Controllers.Abstracted;
-using TaskManager.Api.Data;
-using TaskManager.Api.Exceptions;
-using TaskManager.Api.Services;
-using TaskManager.Command.Models;
+using TaskManager.Core.Contracts.Services;
+using TaskManager.Core.Models;
+using TaskManager.Infrastructure.Services;
 
 namespace TaskManager.Api.Controllers
 {
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class DeskController(ApplicationContext context) : ControllerBase, ICRUDControllerAsync<DeskModel>
+    public class BoardController(IBoardService boardService) : ControllerBase, ICRUDController<BoardModel,Guid>
     {
-        private readonly DeskService _service = new(context);
+        private readonly IBoardService _boardService = boardService;
 
         /// <summary>
         /// Create a desk
@@ -21,11 +20,11 @@ namespace TaskManager.Api.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
-        [ProducesResponseType(typeof(DeskModel), StatusCodes.Status201Created)]
-        public async Task<IActionResult> CreateAsync(DeskModel model)
+        [ProducesResponseType(typeof(BoardModel), StatusCodes.Status201Created)]
+        public async Task<IActionResult> Create(BoardModel model)
         {
-            var modelToCreate = await _service.CreateAsync(model);
-            return CreatedAtAction(nameof(GetByIdAsync), new { id = modelToCreate.Id }, modelToCreate);
+            var modelToCreate = await _boardService.CreateAsync(model);
+            return CreatedAtAction(nameof(GetById), new { id = modelToCreate.Id }, modelToCreate);
         }
 
         /// <summary>
@@ -35,9 +34,9 @@ namespace TaskManager.Api.Controllers
         /// <returns></returns>
         [HttpDelete]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> DeleteAsync(int id)
+        public async Task<IActionResult> Delete(Guid id)
         {
-            await _service.DeleteAsync(id);
+            await _boardService.DeleteAsync(id);
             return Ok();
         }
 
@@ -46,10 +45,10 @@ namespace TaskManager.Api.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        [ProducesResponseType(typeof(List<DeskModel>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAllAsync()
+        [ProducesResponseType(typeof(List<BoardModel>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAll()
         {
-            return Ok(await _service.GetAllAsync());
+            return Ok(await _boardService.GetAllAsync());
         }
 
         /// <summary>
@@ -58,10 +57,10 @@ namespace TaskManager.Api.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(DeskModel), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetByIdAsync(int id)
+        [ProducesResponseType(typeof(BoardModel), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetById(Guid id)
         {
-            var desk = await _service.GetByIdAsync(id);
+            var desk = await _boardService.GetByIdAsync(id);
             return Ok(desk);
         }
 
@@ -73,9 +72,9 @@ namespace TaskManager.Api.Controllers
         /// <returns></returns>
         [HttpPut]
         [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
-        public async Task<IActionResult> UpdateAsync(int id, DeskModel model)
+        public async Task<IActionResult> Update(Guid id, BoardModel model)
         {
-            await _service.UpdateAsync(model);
+            await _boardService.UpdateAsync(model);
             return Ok();
         }
     }

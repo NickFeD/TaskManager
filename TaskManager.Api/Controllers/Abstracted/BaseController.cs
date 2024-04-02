@@ -1,0 +1,21 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using TaskManager.Core.Entities;
+using TaskManager.Core.Exceptions;
+
+namespace TaskManager.Api.Controllers.Abstracted;
+
+public class BaseController:ControllerBase
+{
+    private User? _authUser;
+    public User AuthUser  
+    {
+        get
+        {
+            if (_authUser is not null)
+                return _authUser;
+
+            _authUser = HttpContext.Items["user"] as User ?? throw new UnauthorizedException("Сould not identify the user");
+            return _authUser;
+        } 
+    }
+}

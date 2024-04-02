@@ -3,7 +3,7 @@ using TaskManager.Core.Entities;
 
 namespace TaskManager.Core.Contracts.Repository;
 
-public interface IRepository<T, TId> where T : Entity<TId>
+public interface IRepository<T, TId> where T : IEntity<TId>
 {
     Task<TId> InsertAsync(T entity);
     Task<T> UpdateAsync(T entity);

@@ -1,71 +1,49 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TaskManager.Api.Data;
-using TaskManager.Api.Entity;
-using TaskManager.Api.Exceptions;
-using TaskManager.Infrastructure.Services.Abstracted;
-using TaskManager.Command.Models;
-using Task = System.Threading.Tasks.Task;
+﻿using TaskManager.Core.Contracts.Repository;
+using TaskManager.Core.Contracts.Services;
+using TaskManager.Core.Models;
+using TaskManager.Core.Entities;
+using TaskManager.Core.Extentions;
 
 namespace TaskManager.Infrastructure.Services
 {
-    public class ParticipantService : ICRUDServiceAsync<ProjectParticipantModel>
+    public class ParticipantService(IParticipantRepository participantRepository) : IParticipantService
     {
-        private readonly ApplicationContext _context;
+        private readonly IParticipantRepository _participantRepository = participantRepository;
 
-        public ParticipantService(ApplicationContext context) { _context = context; }
-
-        public async Task<ProjectParticipantModel> CreateAsync(ProjectParticipantModel model)
+        public async Task<ParticipantModel> CreateAsync(ParticipantModel model)
         {
             var participant = new ProjectParticipant()
             {
                 ProjectId = model.Id,
                 UserId = model.UserId,
-                UserRoleId = model.UserRoleId,
+                RoleId = model.RoleId,
             };
-            _context.Participants.Add(participant);
-            await _context.SaveChangesAsync();
+            participant = await _participantRepository.AddAsync(participant);
             model.Id = participant.Id;
             return model;
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(Guid id)
         {
-            var countDelete = await _context.Participants.Where(d => d.Id == id).ExecuteDeleteAsync();
-
-            if (countDelete < 1)
-                throw new NotFoundException("Not found participant");
+            await _participantRepository.DeleteAsync(id);
         }
 
-        public async Task<List<ProjectParticipantModel>> GetAllAsync()
+        public async Task<List<ParticipantModel>> GetAllAsync()
         {
-            var participant = await _context.Participants.AsNoTracking().Select(d => d.ToDto()).ToListAsync();
-
-            if (participant.Count < 1)
-                throw new NotFoundException("Not found participants");
-
-            return participant;
+            
+            var participant = (await _participantRepository.GetAllAsync()).Select(p => p.ToModel());
+            return participant.ToList();
         }
 
-        public async Task<ProjectParticipantModel> GetByIdAsync(int id)
+        public async Task<ParticipantModel> GetByIdAsync(Guid id)
         {
-            var participant = await _context.Participants.AsNoTracking().FirstOrDefaultAsync(p => p.Id.Equals(id));
-
-            if (participant is null)
-                throw new NotFoundException("Not found participant");
-
-            return participant.ToDto();
+            var participant = await _participantRepository.GetByIdAsync(id);
+            return participant.ToModel();
         }
 
-        public async Task UpdateAsync(ProjectParticipantModel model)
+        public async Task UpdateAsync(ParticipantModel model)
         {
-            var countUpdate = await _context.Participants.Where(d => d.Id == model.Id)
-                .ExecuteUpdateAsync(setter => setter
-                .SetProperty(o => o.ProjectId, model.ProjectId)
-                .SetProperty(o => o.UserId, model.UserId)
-                .SetProperty(o => o.UserRoleId, model.UserRoleId));
-
-            if (countUpdate < 1)
-                throw new NotFoundException("Not found participant");
+            await _participantRepository.UpdateAsync(model.ToEntity());
         }
     }
 }

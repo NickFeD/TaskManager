@@ -3,9 +3,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TaskManager.Core.Models.Abstracted
 {
-    public abstract class Model<TId>
+    public abstract class Model
     {
         [Column("id")]
-        public TId Id { get; set; }
+        public Guid Id { get; set; }
     }
 }

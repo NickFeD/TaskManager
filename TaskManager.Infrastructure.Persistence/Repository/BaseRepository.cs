@@ -5,7 +5,7 @@ using TaskManager.Core.Exceptions;
 
 namespace TaskManager.Infrastructure.Persistence.Repository;
 
-public class BaseRepository<T, TId> : IRepository<T, TId> where T : Core.Entities.Entity<TId>
+public class BaseRepository<T, TId> : IRepository<T, TId> where T : Core.Entities.IEntity<TId>
 {
     protected readonly TaskManagerDbContext _context;
     private readonly DbSet<T> table;
@@ -60,7 +60,7 @@ public class BaseRepository<T, TId> : IRepository<T, TId> where T : Core.Entitie
 
     public async Task<T> GetFirstByConditionAsync(Expression<Func<T, bool>> filter)
         => await table.AsNoTracking().FirstOrDefaultAsync(filter)
-            ?? throw new NotFoundException($"{typeof(T)} not found");
+            ?? throw new BadRequestException("Invalid token details.");
 
     public async Task<bool> ContainsdAsync(TId id)
     {

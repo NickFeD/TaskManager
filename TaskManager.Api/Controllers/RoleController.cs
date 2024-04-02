@@ -1,17 +1,15 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using TaskManager.Api.Controllers.Abstracted;
-using TaskManager.Api.Data;
-using TaskManager.Api.Services;
-using TaskManager.Command.Models;
+using TaskManager.Core.Contracts.Services;
+using TaskManager.Core.Models;
 
 namespace TaskManager.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class RoleController(ApplicationContext context) : ControllerBase, ICRUDController<RoleModel>
+    public class RoleController(IRoleService roleService) : BaseController
     {
-        private readonly RoleService _service = new(context);
+        private readonly IRoleService _roleService = roleService;
 
         /// <summary>
         /// Create a role
@@ -23,7 +21,7 @@ namespace TaskManager.Api.Controllers
         [ProducesDefaultResponseType]
         public async Task<IActionResult> Create([FromBody] RoleModel model)
         {
-            var modelToCreate = await _service.CreateAsync(model);
+            var modelToCreate = await _roleService.CreateAsync(model);
             return CreatedAtAction(nameof(GetById), new { id = modelToCreate.Id }, modelToCreate);
         }
 
@@ -33,9 +31,9 @@ namespace TaskManager.Api.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(Guid id)
         {
-            await _service.DeleteAsync(id);
+            await _roleService.DeleteAsync(id);
             return Ok();
         }
 
@@ -46,7 +44,7 @@ namespace TaskManager.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var response = await _service.GetAllAsync();
+            var response = await _roleService.GetAllAsync();
             return Ok(response);
         }
 
@@ -56,9 +54,9 @@ namespace TaskManager.Api.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetById(Guid id)
         {
-            var response = await _service.GetByIdAsync(id);
+            var response = await _roleService.GetByIdAsync(id);
             return Ok(response);
         }
 
@@ -68,10 +66,18 @@ namespace TaskManager.Api.Controllers
         /// <param name="id"></param>
         /// <param name="model"></param>
         /// <returns></returns>
-        [HttpPut]
-        public async Task<IActionResult> Update(int id, RoleModel model)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(Guid id, RoleUpdateModel model)
         {
-            await _service.UpdateAsync(model);
+            var role = new RoleModel()
+            {
+                Id = id,
+                Name = model.Name,
+                AllowedAddUsersProject = model.AllowedAddUsersProject,
+                AllowedDeleteProject = model.AllowedDeleteProject,
+                AllowedEditProject = model.AllowedEditProject,
+            };
+            await _roleService.UpdateAsync(role);
             return Ok();
         }
     }

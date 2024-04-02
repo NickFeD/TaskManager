@@ -7,11 +7,11 @@ using TaskManager.Core.Models.Abstracted;
 
 namespace TaskManager.Core.Models
 {
-    public class ProjectParticipantModel:Model<Guid>
+    public class ParticipantModel:Model
     {
-        public int UserId { get; set; }
-        public int ProjectId { get; set; }
+        public Guid UserId { get; set; }
+        public Guid ProjectId { get; set; }
 
-        public int? UserRoleId { get; set; }
+        public Guid RoleId { get; set; }
     }
 }

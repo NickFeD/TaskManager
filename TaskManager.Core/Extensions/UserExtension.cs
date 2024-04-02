@@ -1,5 +1,6 @@
-﻿using TaskManager.Core.Entities;
-using TaskManager.Core.Models;
+﻿using System.Data;
+using TaskManager.Core.Entities;
+using TaskManager.Core.Models.User;
 
 namespace TaskManager.Core.Extentions;
 
