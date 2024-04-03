@@ -94,7 +94,7 @@ namespace TaskManager.Api
                         var ipAddress = context.Request.HttpContext.Connection.RemoteIpAddress!.ToString();
                         var jwtService = context.Request.HttpContext.RequestServices.GetService<IJwtService>()!;
                         var jwtToken = context.SecurityToken as JsonWebToken;
-                        context.HttpContext.Items["user"]= await jwtService.IsTokenValid(jwtToken!.EncodedToken, ipAddress);
+                        context.HttpContext.Items["user"] = await jwtService.IsTokenValid(jwtToken!.EncodedToken, ipAddress);
                     };
                 });
 
@@ -118,7 +118,7 @@ namespace TaskManager.Api
             services.AddTransient<IRoleService, RoleService>();
             services.AddTransient<ITaskService, TaskService>();
             services.AddTransient<IUserService, UserService>();
-
+            services.AddTransient<IUserRefreshTokenService, UserRefreshTokenService>();
 
             // Add services to the container.
             services.AddConnections();
@@ -162,5 +162,7 @@ namespace TaskManager.Api
             });
             app.UseCors("CorsPolicy");
         }
+
+        
     }
 }

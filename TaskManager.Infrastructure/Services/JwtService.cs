@@ -20,7 +20,7 @@ namespace TaskManager.Infrastructure.Services
         private readonly IEncryptService _encryptService = encryptService;
 
         private readonly IConfiguration _configuration = configuration;
-        private readonly DateTime _expiresToken = DateTime.UtcNow.AddMinutes(1);
+        private readonly DateTime _expiresToken = DateTime.UtcNow.AddDays(1);
         private readonly DateTime _expiresRefreshToken = DateTime.UtcNow.AddMonths(2);
 
         #region Public Metod
@@ -37,7 +37,7 @@ namespace TaskManager.Infrastructure.Services
             var user = await _userRepository.GetUserByEmail(authRequest.Email);
             var hashPassword = _encryptService.HashPassword(authRequest.Password, user.Salt);
 
-            if (user.Password.SequenceEqual(hashPassword))
+            if (!user.Password.SequenceEqual(hashPassword))
                 throw new BadRequestException("The email or password is incorrect");
 
             string tokenString = GenerateToken(user.Email);
@@ -48,6 +48,8 @@ namespace TaskManager.Infrastructure.Services
         public async Task<User> IsTokenValid(string accessToken, string ipAddress)
         {
             var refreshToken = await _refreshTokenRepository.GetFirstByConditionAsync(x => x.Token == accessToken && x.IpAddress == ipAddress);
+            if (refreshToken is null)
+                throw new BadRequestException("Invalid token details.");
             var user = await _userRepository.GetByIdAsync(refreshToken.UserId);
             return user;
         }

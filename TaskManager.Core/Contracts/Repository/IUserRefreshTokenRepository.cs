@@ -1,5 +1,4 @@
-﻿using System.Net;
-using TaskManager.Core.Entities;
+﻿using TaskManager.Core.Entities;
 
 namespace TaskManager.Core.Contracts.Repository;
 

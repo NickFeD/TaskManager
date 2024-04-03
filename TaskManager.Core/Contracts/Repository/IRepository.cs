@@ -10,7 +10,7 @@ public interface IRepository<T, TId> where T : IEntity<TId>
     Task DeleteAsync(TId id);
     Task<IEnumerable<T>> GetAllAsync();
     Task<IEnumerable<T>> GetByConditionAsync(Expression<Func<T, bool>> filter);
-    Task<T> GetFirstByConditionAsync(Expression<Func<T, bool>> filter);
+    Task<T?> GetFirstByConditionAsync(Expression<Func<T, bool>> filter);
     Task<T> GetByIdAsync(TId id);
     Task<T> AddAsync(T entity);
     Task<bool> ContainsdAsync(TId id);

@@ -75,8 +75,8 @@ namespace TaskManager.Api.Controllers
         [HttpPost("{id}/Users")]
         public async Task<IActionResult> AddUsers(Guid id, ProjectAddUsers addUsers)
         {
-            var response = await _projectService.AddUsers(id, addUsers.RoleId, addUsers.Usernames);
-            return Ok(response);
+            await _projectService.AddUsers(id, addUsers.RoleId, addUsers.UserId);
+            return Ok();
         }
 
         [HttpGet("{id}/Users")]

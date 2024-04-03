@@ -3,19 +3,19 @@
 namespace TaskManager.Core.Entities;
 
 [Table("participants")]
-public class ProjectParticipant:IEntity<Guid>
+public class ProjectParticipant : Entity<Guid>
 {
     public Guid UserId { get; set; }
 
     [ForeignKey(nameof(UserId))]
-    public User? User { get; set; }
+    public User User { get; set; }
 
     public Guid ProjectId { get; set; }
 
     [ForeignKey(nameof(ProjectId))]
-    public Project? Project { get; set; }
+    public Project Project { get; set; }
 
-    public Guid RoleId { get; set; }
+    public Guid? RoleId { get; set; }
 
     [ForeignKey(nameof(RoleId))]
     public Role? Role { get; set; }

@@ -3,7 +3,7 @@ using TaskManager.Core.Models.Abstracted;
 
 namespace TaskManager.Api.Controllers.Abstracted
 {
-    public interface ICRUDController<TModel,TId> where TModel : Model
+    public interface ICRUDController<TModel, TId> where TModel : Model
     {
         [HttpGet]
         public Task<IActionResult> GetAll();

@@ -5,7 +5,7 @@ using TaskManager.Core.Models;
 
 namespace TaskManager.Infrastructure.Services
 {
-    public class BoardService(IBoardRepository boardRepository) :IBoardService
+    public class BoardService(IBoardRepository boardRepository) : IBoardService
     {
         private readonly IBoardRepository _boardRepository = boardRepository;
 
@@ -17,13 +17,13 @@ namespace TaskManager.Infrastructure.Services
             return model;
         }
 
-        public Task DeleteAsync(Guid id) 
+        public Task DeleteAsync(Guid id)
             => _boardRepository.DeleteAsync(id);
 
-        public async Task<List<BoardModel>> GetAllAsync()
+        public async Task<IEnumerable<BoardModel>> GetAllAsync()
         {
             return (await _boardRepository.GetAllAsync())
-                .Select(m=>m.ToModel()).ToList();
+                .Select(m => m.ToModel()).ToList();
         }
 
         public async Task<BoardModel> GetByIdAsync(Guid id)
@@ -34,9 +34,9 @@ namespace TaskManager.Infrastructure.Services
 
         public async Task UpdateAsync(BoardModel model)
         {
-             await _boardRepository.UpdateAsync(model.ToEntity());
+            await _boardRepository.UpdateAsync(model.ToEntity());
         }
 
-        
+
     }
 }

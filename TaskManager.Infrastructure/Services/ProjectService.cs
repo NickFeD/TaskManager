@@ -3,7 +3,6 @@ using TaskManager.Core.Contracts.Services;
 using TaskManager.Core.Entities;
 using TaskManager.Core.Exceptions;
 using TaskManager.Core.Extentions;
-using TaskManager.Core.Models;
 using TaskManager.Core.Models.Project;
 
 namespace TaskManager.Infrastructure.Services
@@ -27,7 +26,7 @@ namespace TaskManager.Infrastructure.Services
             return (await _projectRepository.UpdateAsync(project)).ToModel();
         }
 
-        public async Task<Response> AddUsers(Guid projectId,Guid roleId, params Guid[] usersId)
+        public async Task AddUsers(Guid projectId, Guid roleId, params Guid[] usersId)
         {
             var participants = new ProjectParticipant[usersId.Length];
             for (int i = 0; i < usersId.Length; i++)
@@ -40,15 +39,14 @@ namespace TaskManager.Infrastructure.Services
                 };
                 participants[i] = participant;
             }
-            await _projectRepository.AddRangeAsync(participants);
-            return new() { IsSuccess = true };
+            await _projectRepository.AddRangeAsync(projectId, participants);
         }
 
         public async Task<IEnumerable<ProjectModel>> GetAllAsync()
         {
             var project = await _projectRepository.GetAllAsync();
 
-            return project.Select(p=>p.ToModel());
+            return project.Select(p => p.ToModel());
         }
 
         public async Task<ProjectModel> GetByIdAsync(Guid id)
@@ -60,7 +58,7 @@ namespace TaskManager.Infrastructure.Services
 
         public async Task<ProjectModel> CreateAsync(ProjectModel model)
         {
-            
+
             var role = new Role()
             {
                 Name = "Admin",
@@ -72,7 +70,7 @@ namespace TaskManager.Infrastructure.Services
             var participant = new ProjectParticipant()
             {
                 Role = role,
-                UserId = model.CreatorId,
+                UserId = model.CreatorId!.Value,
             };
             var project = new Project()
             {

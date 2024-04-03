@@ -14,13 +14,22 @@ namespace TaskManager.Api.Controllers
         /// <summary>
         /// Create a role
         /// </summary>
-        /// <param name="model"></param>
+        /// <param name="createModel"></param>
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesDefaultResponseType]
-        public async Task<IActionResult> Create([FromBody] RoleModel model)
+        public async Task<IActionResult> Create([FromBody] RoleCreateModel createModel)
         {
+            var model = new RoleModel()
+            {
+               Id = Guid.NewGuid(),
+               Name = createModel.Name,
+               ProjectId =createModel.ProjectId,
+               AllowedAddUsersProject = createModel.AllowedAddUsersProject,
+               AllowedDeleteProject = createModel.AllowedDeleteProject,
+               AllowedEditProject = createModel.AllowedEditProject,
+            };
             var modelToCreate = await _roleService.CreateAsync(model);
             return CreatedAtAction(nameof(GetById), new { id = modelToCreate.Id }, modelToCreate);
         }

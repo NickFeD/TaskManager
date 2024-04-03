@@ -3,14 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using TaskManager.Api.Controllers.Abstracted;
 using TaskManager.Core.Contracts.Services;
 using TaskManager.Core.Models;
-using Microsoft.AspNetCore.Http;
 
 namespace TaskManager.Api.Controllers
 {
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class ParticipantController(IParticipantService participantService) : BaseController, ICRUDController<ParticipantModel,Guid>
+    public class ParticipantController(IParticipantService participantService) : BaseController, ICRUDController<ParticipantModel, Guid>
     {
         private readonly IParticipantService _participantService = participantService;
 

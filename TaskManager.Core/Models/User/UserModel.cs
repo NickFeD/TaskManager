@@ -22,7 +22,7 @@ namespace TaskManager.Core.Models.User
 
         [EmailAddress]
         public string Email { get; set; }
-        [Phone]
+        //[Phone]
         public string Phone { get; set; }
         public DateTime RegistrationDate { get; set; }
         public DateTime LastLoginData { get; set; } = DateTime.Now;

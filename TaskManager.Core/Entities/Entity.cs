@@ -2,7 +2,7 @@
 
 namespace TaskManager.Core.Entities;
 
-public class Entity<TId>:IEntity<TId>
+public class Entity<TId> : IEntity<TId>
 {
     [Required]
     public TId Id { get; set; }

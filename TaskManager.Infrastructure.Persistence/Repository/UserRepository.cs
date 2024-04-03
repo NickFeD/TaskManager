@@ -10,7 +10,7 @@ public class UserRepository(TaskManagerDbContext context) : BaseRepository<User,
     public async Task<User> GetUserByEmail(string email)
     {
         var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Email == email)
-            ?? throw new UnauthorizedException()("user not registration");
+            ?? throw new UnauthorizedException("user not registration");
         return user;
     }
 }

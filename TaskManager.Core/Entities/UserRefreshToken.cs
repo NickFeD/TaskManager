@@ -3,7 +3,7 @@
 namespace TaskManager.Core.Entities;
 
 [Table("user_refresh_tokens")]
-public class UserRefreshToken : IEntity<Guid>
+public class UserRefreshToken : Entity<Guid>
 {
     public string IpAddress { get; set; } = string.Empty;
 

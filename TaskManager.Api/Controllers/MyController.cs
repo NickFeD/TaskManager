@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using TaskManager.Api.Controllers.Abstracted;
 using TaskManager.Core.Contracts.Services;
 using TaskManager.Core.Extentions;
-using Microsoft.AspNetCore.Http;
 using TaskManager.Core.Models.User;
 
 namespace TaskManager.Api.Controllers

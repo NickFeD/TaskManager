@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskManager.Api.Controllers.Abstracted;
-using TaskManager.Core.Models;
 using TaskManager.Core.Contracts.Services;
+using TaskManager.Core.Models;
 
 namespace TaskManager.Api.Controllers
 {
@@ -10,7 +10,7 @@ namespace TaskManager.Api.Controllers
     [ApiController]
     [Route("api/[controller]")]
     public class TaskController(ITaskService taskService) : BaseController
-    { 
+    {
         private readonly ITaskService _taskService = taskService;
 
         /// <summary>

@@ -1,9 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
-using TaskManager.Core.Entities;
-using TaskManager.Infrastructure.Persistence.Repository;
-
-namespace TaskManager.Infrastructure.Services;
+﻿namespace TaskManager.Infrastructure.Services;
 
 //public class HttpContextHandlerService
 //{
@@ -21,7 +16,7 @@ namespace TaskManager.Infrastructure.Services;
 //            throw new UnauthorizedException();
 //        return _context.Users.AsNoTracking().FirstOrDefault(u => u.Email.Equals(emailUser));
 //    }
-    
+
 //    public Task<User> GetUserAsNoTrackingAsync(HttpContext httpContext)
 //        => Task.FromResult(GetUserAsNoTracking(httpContext));
 

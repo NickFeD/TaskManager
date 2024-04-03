@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TaskManager.Core.Models.Abstracted;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace TaskManager.Core.Models
 {
@@ -14,9 +8,11 @@ namespace TaskManager.Core.Models
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public required string Password { get; set; }
+
         [EmailAddress]
         public required string Email { get; set; }
-        [Phone]
+
+       // [Phone]
         public required string Phone { get; set; }
     }
 }

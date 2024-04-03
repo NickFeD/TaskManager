@@ -4,10 +4,10 @@ using TaskManager.Core.Exceptions;
 
 namespace TaskManager.Api.Controllers.Abstracted;
 
-public class BaseController:ControllerBase
+public class BaseController : ControllerBase
 {
     private User? _authUser;
-    public User AuthUser  
+    public User AuthUser
     {
         get
         {
@@ -16,6 +16,6 @@ public class BaseController:ControllerBase
 
             _authUser = HttpContext.Items["user"] as User ?? throw new UnauthorizedException("Сould not identify the user");
             return _authUser;
-        } 
+        }
     }
 }

@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TaskManager.Core.Models;
-using TaskManager.Core.Models.Project;
+﻿using TaskManager.Core.Models.Project;
 
 namespace TaskManager.Core.Contracts.Services
 {
     public interface IProjectService
     {
-        Task<Response> AddUsers(Guid projectId, Guid roleId, params string[] usersId);
+        Task AddUsers(Guid projectId, Guid roleId, params Guid[] usersId);
         Task<ProjectModel> CreateAsync(ProjectModel model);
         Task DeleteAsync(Guid id);
         Task<IEnumerable<ProjectModel>> GetAllAsync();

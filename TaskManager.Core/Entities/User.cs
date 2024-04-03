@@ -7,14 +7,14 @@ namespace TaskManager.Core.Entities;
 public class User : Entity<Guid>
 {
     //public Guid Id { get; set; }
-    [Required]  
+    [Required]
     public string Username { get; set; } = "";
 
     public string? FirstName { get; set; }
 
     public string? LastName { get; set; }
 
-    [Phone]
+    //[Phone]
     public required string Phone { get; set; }
     [EmailAddress]
     public required string Email { get; set; }

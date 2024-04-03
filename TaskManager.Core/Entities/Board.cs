@@ -4,9 +4,8 @@ namespace TaskManager.Core.Entities;
 
 
 [Table("boards")]
-public class Board : IEntity<Guid>
+public class Board : Entity<Guid>
 {
-    public Guid Id { get; set; }
     public required string Name { get; set; }
     public string? Description { get; set; }
     public DateTime CreationData { get; set; } = DateTime.Now;

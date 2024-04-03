@@ -1,8 +1,8 @@
 ﻿using TaskManager.Core.Contracts.Repository;
 using TaskManager.Core.Contracts.Services;
-using TaskManager.Core.Models;
 using TaskManager.Core.Entities;
 using TaskManager.Core.Extentions;
+using TaskManager.Core.Models;
 
 namespace TaskManager.Infrastructure.Services
 {
@@ -28,9 +28,9 @@ namespace TaskManager.Infrastructure.Services
             await _participantRepository.DeleteAsync(id);
         }
 
-        public async Task<List<ParticipantModel>> GetAllAsync()
+        public async Task<IEnumerable<ParticipantModel>> GetAllAsync()
         {
-            
+
             var participant = (await _participantRepository.GetAllAsync()).Select(p => p.ToModel());
             return participant.ToList();
         }

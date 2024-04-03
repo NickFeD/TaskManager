@@ -4,5 +4,5 @@ public class ProjectAddUsers
 {
     public Guid RoleId { get; set; }
 
-    public string[] Usernames { get; set; } = [];
+    public Guid[] UserId { get; set; } = [];
 }

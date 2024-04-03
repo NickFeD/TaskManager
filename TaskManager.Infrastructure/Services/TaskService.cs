@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TaskManager.Core.Contracts.Repository;
+﻿using TaskManager.Core.Contracts.Repository;
 using TaskManager.Core.Contracts.Services;
 using TaskManager.Core.Extentions;
 using TaskManager.Core.Models;
@@ -16,13 +15,13 @@ namespace TaskManager.Infrastructure.Services
             return model;
         }
 
-        public Task DeleteAsync(Guid id) 
+        public Task DeleteAsync(Guid id)
             => _taskRepository.DeleteAsync(id);
 
         public async Task<IEnumerable<TaskModel>> GetAllAsync()
         {
             var desks = await _taskRepository.GetAllAsync();
-            return desks.Select(d=>d.ToModel());
+            return desks.Select(d => d.ToModel());
         }
 
         public async Task<TaskModel> GetByIdAsync(Guid id)

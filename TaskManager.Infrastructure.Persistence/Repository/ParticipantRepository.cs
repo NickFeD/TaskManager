@@ -9,8 +9,8 @@ public class ParticipantRepository(TaskManagerDbContext context) : BaseRepositor
 {
     public async Task<List<Project>> GetProjectsByConditionAsync(Expression<Func<ProjectParticipant, bool>> filter)
     {
-        var projects = await _context.Participant.AsNoTracking().Where(filter).Include(p=>p.Project).Select(p=>p.Project).ToListAsync();
-        if(projects is null)
+        var projects = await _context.Participant.AsNoTracking().Where(filter).Include(p => p.Project).Select(p => p.Project).ToListAsync();
+        if (projects is null)
             throw new ArgumentNullException(nameof(projects));
         return projects;
     }

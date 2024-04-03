@@ -4,6 +4,5 @@ namespace TaskManager.Core.Contracts.Services
 {
     public interface IParticipantService : ICRUDService<ParticipantModel, Guid>
     {
-        Task UpdateAsync(ParticipantModel model);
     }
 }

@@ -1,11 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using TaskManager.Core.Contracts.Repository;
+using TaskManager.Core.Entities;
 using TaskManager.Core.Exceptions;
 
 namespace TaskManager.Infrastructure.Persistence.Repository;
 
-public class BaseRepository<T, TId> : IRepository<T, TId> where T : Core.Entities.IEntity<TId>
+public class BaseRepository<T, TId> : IRepository<T, TId> where T : class, IEntity<TId>
 {
     protected readonly TaskManagerDbContext _context;
     private readonly DbSet<T> table;
@@ -39,14 +40,14 @@ public class BaseRepository<T, TId> : IRepository<T, TId> where T : Core.Entitie
 
     public async Task<TId> InsertAsync(T entity)
     {
-        await _context.Set<T>().AddAsync(entity);
+        await table.AddAsync(entity);
         await _context.SaveChangesAsync();
         return entity.Id;
     }
 
     public async Task<T> AddAsync(T entity)
     {
-        await _context.Set<T>().AddAsync(entity);
+        await table.AddAsync(entity);
         await _context.SaveChangesAsync();
         return entity;
     }
@@ -58,9 +59,8 @@ public class BaseRepository<T, TId> : IRepository<T, TId> where T : Core.Entitie
         return entity;
     }
 
-    public async Task<T> GetFirstByConditionAsync(Expression<Func<T, bool>> filter)
-        => await table.AsNoTracking().FirstOrDefaultAsync(filter)
-            ?? throw new BadRequestException("Invalid token details.");
+    public Task<T?> GetFirstByConditionAsync(Expression<Func<T, bool>> filter)
+        => table.AsNoTracking().FirstOrDefaultAsync(filter);
 
     public async Task<bool> ContainsdAsync(TId id)
     {
@@ -69,6 +69,6 @@ public class BaseRepository<T, TId> : IRepository<T, TId> where T : Core.Entitie
 
     public async Task<bool> ContainsdByConditionAsync(Expression<Func<T, bool>> filter)
     {
-        return await _context.Set<T>().AnyAsync(filter);
+        return await table.AnyAsync(filter);
     }
 }
