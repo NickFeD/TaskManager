@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using System.Diagnostics.CodeAnalysis;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -31,7 +32,6 @@ namespace TaskManager.Infrastructure.Services
 
             return await SaveTokenDetails(ipAddress, userId, accessToken, refreshToken);
         }
-
         public async Task<AuthResponse> GetTokenAsync(AuthRequest authRequest, string ipAddress)
         {
             var user = await _userRepository.GetUserByEmail(authRequest.Email);

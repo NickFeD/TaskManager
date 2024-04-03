@@ -33,16 +33,19 @@ namespace TaskManager.Api
             services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo { Title = "TaskEntity Manager API", Version = "v1" });
-                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                {
-                    Description = "This site use Bearer token and you have to pass" +
-                    "it is Bearer Token",
-                    Name = "Authorization",
-                    In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer",
-                });
-                options.AddSecurityRequirement(new OpenApiSecurityRequirement()
+                options.AddSecurityDefinition(
+                    JwtBearerDefaults.AuthenticationScheme, 
+                    new OpenApiSecurityScheme
+                    {
+                        Description = "This site use Bearer token and you have to pass" +
+                        "it is Bearer Token",
+                        Name = "Authorization",
+                        In = ParameterLocation.Header,
+                        Type = SecuritySchemeType.Http,
+                        BearerFormat = "Jwt Token",
+                        Scheme = JwtBearerDefaults.AuthenticationScheme
+                    });
+                options.AddSecurityRequirement(new()
                 {
                     {
                         new OpenApiSecurityScheme
@@ -50,10 +53,9 @@ namespace TaskManager.Api
                             Reference = new OpenApiReference
                             {
                                 Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer",
+                                Id = JwtBearerDefaults.AuthenticationScheme,
                             },
                             Scheme = "oauth2",
-                            Name = "Bearer",
                             In = ParameterLocation.Header,
                         },
                             new List<string>()
@@ -126,8 +128,7 @@ namespace TaskManager.Api
             string? connection = Configuration.GetConnectionString("DefaultConnection");
             connection = connection is null ? "" : connection;
 
-            //services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(connection));
-            services.AddDbContext<TaskManagerDbContext>(options => options.UseSqlServer(connection));
+            services.AddDbContext<TaskManagerDbContext>(options => options.UseNpgsql(connection));
 
             services.AddControllers();
         }

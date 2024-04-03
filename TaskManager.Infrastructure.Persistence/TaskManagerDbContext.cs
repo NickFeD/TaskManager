@@ -4,8 +4,12 @@ using TaskManager.Infrastructure.Persistence.Configurations;
 
 namespace TaskManager.Infrastructure.Persistence;
 
-public class TaskManagerDbContext : DbContext
+public class TaskManagerDbContext: DbContext
 {
+    public TaskManagerDbContext(DbContextOptions options) : base(options)
+    {
+        Database.Migrate();
+    }
 
     public DbSet<UserRefreshToken> UserRefreshToken { get; set; }
     public DbSet<ProjectParticipant> Participant { get; set; }
@@ -14,11 +18,6 @@ public class TaskManagerDbContext : DbContext
     public DbSet<TaskEntity> Tasks { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Role> Roles { get; set; }
-
-    public TaskManagerDbContext(DbContextOptions<TaskManagerDbContext> options) : base(options)
-    {
-        Database.EnsureCreated();
-    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
