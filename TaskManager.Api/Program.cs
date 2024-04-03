@@ -120,8 +120,7 @@ public class Program
         // Add builder.Services to the container.
         builder.Services.AddConnections();
 
-        string? connection = builder.Configuration.GetConnectionString("DefaultConnection");
-        connection = connection is null ? "" : connection;
+        string? connection = builder.Configuration.GetConnectionString("PostgreSql")?? throw new Exception("PostgreSql not found in configuration");
 
         builder.Services.AddDbContext<TaskManagerDbContext>(options => options.UseNpgsql(connection));
 
