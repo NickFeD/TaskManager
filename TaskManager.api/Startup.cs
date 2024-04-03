@@ -140,11 +140,6 @@ namespace TaskManager.Api
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "TaskManager V1");
             });
-
-            if (env.IsDevelopment())
-            {
-
-            }
             app.UseHttpsRedirection();
 
             app.UseRouting();
