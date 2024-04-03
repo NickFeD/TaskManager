@@ -1,12 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using TaskManager.Core.Models;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace TaskManager.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CheckController : ControllerBase
+    public class HealthzController : ControllerBase
     {
         [HttpGet()]
         [ProducesResponseType(StatusCodes.Status200OK)]
