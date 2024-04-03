@@ -13,6 +13,7 @@
   <PropertyGroup>
     <IncludeOpenAPIAnalyzers>true</IncludeOpenAPIAnalyzers>
     <StartupObject>TaskManager.Api.Program</StartupObject>
+    <PublishAot>True</PublishAot>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using TaskManager.Api.Data;
-
-namespace TaskManager.Api.Controllers;
+﻿namespace TaskManager.Api.Controllers;
 
 //[Route("api/[controller]")]
 //[ApiController]

@@ -16,7 +16,7 @@ public class UserRefreshTokenService(IUserRefreshTokenRepository refreshTokenRep
         => _refreshTokenRepository.DeleteAsync(id);
 
     public Task<IEnumerable<UserRefreshToken>> GetAllAsync()
-        =>  _refreshTokenRepository.GetAllAsync();
+        => _refreshTokenRepository.GetAllAsync();
 
     public Task<UserRefreshToken> GetByIdAsync(Guid id)
         => _refreshTokenRepository.GetByIdAsync(id);

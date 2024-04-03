@@ -23,12 +23,12 @@ namespace TaskManager.Api.Controllers
         {
             var model = new RoleModel()
             {
-               Id = Guid.NewGuid(),
-               Name = createModel.Name,
-               ProjectId =createModel.ProjectId,
-               AllowedAddUsersProject = createModel.AllowedAddUsersProject,
-               AllowedDeleteProject = createModel.AllowedDeleteProject,
-               AllowedEditProject = createModel.AllowedEditProject,
+                Id = Guid.NewGuid(),
+                Name = createModel.Name,
+                ProjectId = createModel.ProjectId,
+                AllowedAddUsersProject = createModel.AllowedAddUsersProject,
+                AllowedDeleteProject = createModel.AllowedDeleteProject,
+                AllowedEditProject = createModel.AllowedEditProject,
             };
             var modelToCreate = await _roleService.CreateAsync(model);
             return CreatedAtAction(nameof(GetById), new { id = modelToCreate.Id }, modelToCreate);

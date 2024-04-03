@@ -12,7 +12,7 @@ namespace TaskManager.Core.Models
         [EmailAddress]
         public required string Email { get; set; }
 
-       // [Phone]
+        // [Phone]
         public required string Phone { get; set; }
     }
 }

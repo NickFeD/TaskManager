@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-
-namespace TaskManager.Api.Data;
+﻿namespace TaskManager.Api.Data;
 
 //public class Initialization
 //{
