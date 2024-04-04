@@ -24,6 +24,7 @@ public class Program
         builder.Services.AddExceptionHandler<DefaultExceptionHandler>();
 
         builder.Services.AddEndpointsApiExplorer();
+
         builder.Services.AddAutoMapper(typeof(MappingProfile));
 
         builder.Services.AddSwaggerGen(options =>
@@ -126,12 +127,6 @@ public class Program
         string? connection = builder.Configuration.GetConnectionString("PostgreSql") ?? throw new Exception("PostgreSql not found in configuration");
 
         builder.Services.AddDbContext<TaskManagerDbContext>(options => options.UseNpgsql(connection));
-
-        builder.Services.AddStackExchangeRedisCache(options =>
-        {
-            options.Configuration = "redis://red-co78oiud3nmc73e67tag:6379";
-            options.InstanceName = "task_manager";
-        });
 
 
 
