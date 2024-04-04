@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using TaskManager.Core.Entities;
 using TaskManager.Core.Models;
+using TaskManager.Core.Models.Project;
 
 namespace TaskManager.Api.Mappers;
 
@@ -15,5 +16,7 @@ public class MappingProfile : Profile
         CreateMap<ProjectParticipant, ParticipantModel>(MemberList.Destination).ReverseMap();
         CreateMap<ProjectParticipant, ParticipantCreateModel>(MemberList.Destination).ReverseMap();
         CreateMap<ProjectParticipant, ParticipantUpdateModel>(MemberList.Destination).ReverseMap();
+
+        CreateMap<Project, ProjectModel>(MemberList.Destination).ReverseMap();
     }
 }

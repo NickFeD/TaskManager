@@ -49,16 +49,15 @@ namespace TaskManager.Infrastructure.Services
             return (await _userRepository.AddAsync(user)).ToModel();
         }
 
-        public async Task UpdateAsync(Guid Id, UserUpdateModel model)
+        public async Task UpdateAsync(Guid id, UserUpdateModel model)
         {
-            var user = new User()
-            {
-                Id = Id,
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                Email = model.Email,
-                Phone = model.Phone,
-            };
+            var user = await _userRepository.GetByIdAsync(id);
+            if (user is null)
+                throw new BadRequestException("Invalid user uuid");
+            user.FirstName = model.FirstName;
+            user.LastName = model.LastName;
+            user.Email = model.Email;
+            user.Phone = model.Phone;
             user = await _userRepository.UpdateAsync(user);
         }
 

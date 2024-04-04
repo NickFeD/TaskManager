@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.JsonWebTokens;
@@ -25,7 +26,15 @@ public class Program
 
         builder.Services.AddEndpointsApiExplorer();
 
-        builder.Services.AddAutoMapper(typeof(MappingProfile));
+        // Auto Mapper Configurations
+        var mapperConfig = new MapperConfiguration(mc =>
+        {
+            mc.AddProfile(new MappingProfile());
+        });
+
+        IMapper mapper = mapperConfig.CreateMapper();
+        builder.Services.AddSingleton(mapper);
+
 
         builder.Services.AddSwaggerGen(options =>
         {

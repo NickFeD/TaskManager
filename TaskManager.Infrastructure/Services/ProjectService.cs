@@ -1,33 +1,35 @@
-﻿using TaskManager.Core.Contracts.Repository;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Microsoft.EntityFrameworkCore;
 using TaskManager.Core.Contracts.Services;
 using TaskManager.Core.Entities;
 using TaskManager.Core.Exceptions;
-using TaskManager.Core.Extentions;
 using TaskManager.Core.Models.Project;
+using TaskManager.Infrastructure.Persistence;
 
 namespace TaskManager.Infrastructure.Services
 {
-    public class ProjectService(IProjectRepository projectRepository) : IProjectService
+    public class ProjectService(TaskManagerDbContext context, IMapper mapper) : IProjectService
     {
-        private readonly IProjectRepository _projectRepository = projectRepository;
+        private readonly TaskManagerDbContext _context = context;
+        private readonly IMapper _mapper = mapper;
 
-        public async Task<ProjectModel> UpdateAsync(Guid id, ProjectUpdateModel model)
+        public async Task UpdateAsync(Guid id, ProjectUpdateModel model)
         {
-            if (await _projectRepository.ContainsdAsync(id))
-                throw new NotFoundException("progect not found");
+            var count = await _context.Projects.Where(p => p.Id == id)
+                .ExecuteUpdateAsync(setters => setters
+                .SetProperty(p => p.Name, model.Name)
+                .SetProperty(p => p.Status, model.Status)
+                .SetProperty(p => p.Description, model.Description));
 
-            Project project = new()
-            {
-                Id = id,
-                Name = model.Name,
-                Description = model.Description,
-                Status = model.Status,
-            };
-            return (await _projectRepository.UpdateAsync(project)).ToModel();
+            if (count < 1)
+                throw new NotFoundException("Invalid project uuid");
         }
 
         public async Task AddUsers(Guid projectId, Guid roleId, params Guid[] usersId)
         {
+            var taskProject = _context.Projects.FindAsync(projectId);
+
             var participants = new ProjectParticipant[usersId.Length];
             for (int i = 0; i < usersId.Length; i++)
             {
@@ -39,21 +41,29 @@ namespace TaskManager.Infrastructure.Services
                 };
                 participants[i] = participant;
             }
-            await _projectRepository.AddRangeAsync(projectId, participants);
+            var project = await taskProject;
+
+            if (project is null)
+                throw new NotFoundException("Invalid project uuid");
+            project.Participants.AddRange(participants);
+            await _context.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<ProjectModel>> GetAllAsync()
         {
-            var project = await _projectRepository.GetAllAsync();
+            var project = await _context.Projects.AsNoTracking().ProjectTo<ProjectModel>(_mapper.ConfigurationProvider).ToListAsync();
 
-            return project.Select(p => p.ToModel());
+            return project;
         }
 
         public async Task<ProjectModel> GetByIdAsync(Guid id)
         {
-            var project = await _projectRepository.GetByIdAsync(id);
+            var project = await _context.Projects.AsNoTracking().ProjectTo<ProjectModel>(_mapper.ConfigurationProvider).FirstOrDefaultAsync(p => p.Id == id);
 
-            return project.ToModel();
+            if (project is null)
+                throw new NotFoundException("Invalid project uuid");
+
+            return project;
         }
 
         public async Task<ProjectModel> CreateAsync(ProjectModel model)
@@ -72,29 +82,32 @@ namespace TaskManager.Infrastructure.Services
                 Role = role,
                 UserId = model.CreatorId!.Value,
             };
-            var project = new Project()
-            {
-                Name = model.Name,
-                Status = Core.Enums.ProjectStatus.InProgress,
-                CreatorId = model.CreatorId,
-                CreationData = DateTime.UtcNow,
-                Description = model.Description,
-            };
+            var project = _mapper.Map<Project>(model);
+            project.Status = Core.Enums.ProjectStatus.InProgress;
+            project.CreationData = DateTime.UtcNow;
+            project.Participants.Add(participant);
+            project.Roles.Add(role);
+
             role.Project = project;
             role.Participants.Add(participant);
 
             participant.Project = project;
             participant.Role = role;
 
-            project.Participants.Add(participant);
-            project.Roles.Add(role);
 
-            project = await _projectRepository.AddAsync(project);
-            model.Id = project.Id;
-            return model;
+
+            await _context.Projects.AddAsync(project);
+            await _context.SaveChangesAsync();
+
+            return _mapper.Map<ProjectModel>(project);
         }
 
-        public Task DeleteAsync(Guid id)
-            => _projectRepository.DeleteAsync(id);
+        public async Task DeleteAsync(Guid id)
+        {
+            var count = await _context.Projects.Where(p => p.Id == id).ExecuteDeleteAsync();
+
+            if (count < 1)
+                throw new NotFoundException("Invalid project uuid");
+        }
     }
 }

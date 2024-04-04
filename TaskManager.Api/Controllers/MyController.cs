@@ -39,21 +39,21 @@ namespace TaskManager.Api.Controllers
             return Ok();
         }
 
-        /// <summary>
-        /// Deleting a user
-        /// </summary>
-        /// <param name="isConfirmed"></param>
-        /// <returns></returns>
-        [HttpDelete]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesDefaultResponseType]
-        public async Task<IActionResult> Delete(bool isConfirmed)
-        {
-            if (!isConfirmed)
-                throw new BadRequestException("Not confirmed");
-            await _userService.DeleteAsync(AuthUser.Id);
-            return NoContent();
-        }
+        ///// <summary>
+        ///// Deleting a user
+        ///// </summary>
+        ///// <param name="isConfirmed"></param>
+        ///// <returns></returns>
+        //[HttpDelete]
+        //[ProducesResponseType(StatusCodes.Status204NoContent)]
+        //[ProducesDefaultResponseType]
+        //public async Task<IActionResult> Delete(bool isConfirmed)
+        //{
+        //    if (!isConfirmed)
+        //        throw new BadRequestException("Not confirmed");
+        //    await _userService.DeleteAsync(AuthUser.Id);
+        //    return NoContent();
+        //}
 
         /// <summary>
         /// Get a project by user id

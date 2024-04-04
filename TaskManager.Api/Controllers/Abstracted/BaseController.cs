@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Security;
 using TaskManager.Core.Entities;
 using TaskManager.Core.Exceptions;
 
@@ -15,7 +16,10 @@ public class BaseController : ControllerBase
                 return _authUser;
 
             _authUser = HttpContext.Items["user"] as User ?? throw new UnauthorizedException("Сould not identify the user");
+            _authUser.LastLoginData = DateTime.UtcNow;
             return _authUser;
         }
     }
+
+    //public Task<bool> Permission
 }

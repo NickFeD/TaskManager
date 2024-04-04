@@ -43,8 +43,11 @@ namespace TaskManager.Infrastructure.Services
 
         public async Task UpdateAsync(Guid id, BoardUpdateModel model)
         {
-            var board = _mapper.Map<Board>(model);
-            board.Id = id;
+            var board = await _boardRepository.GetByIdAsync(id);
+            if (board is null)
+                throw new BadRequestException("Invalid board uuid");
+            board.Description = model.Description;
+            board.Name = model.Name;
 
             await _boardRepository.UpdateAsync(board);
         }
