@@ -10,7 +10,7 @@ namespace TaskManager.Api.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class BoardController(IBoardService boardService) : ControllerBase, //ICRUDController<BoardModel, Guid>
+    public class BoardController(IBoardService boardService) : ControllerBase //ICRUDController<BoardModel, Guid>
     {
         private readonly IBoardService _boardService = boardService;
         

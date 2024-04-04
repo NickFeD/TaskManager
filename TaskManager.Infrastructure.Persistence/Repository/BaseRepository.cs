@@ -32,7 +32,7 @@ public class BaseRepository<T, TId> : IRepository<T, TId> where T : class, IEnti
         => await table.AsNoTracking().Where(filter).ToListAsync();
 
 
-    public async Task<T> GetByIdAsync(TId id)
+    public async Task<T?> GetByIdAsync(TId id)
     {
         return await table.AsNoTracking().FirstOrDefaultAsync(e => e.Id!.Equals(id))
             ?? throw new NotFoundException($"{typeof(T).ToString().ToLower()} not found");

@@ -1,26 +1,32 @@
-﻿using TaskManager.Core.Contracts.Repository;
+﻿using AutoMapper;
+using System.IdentityModel.Tokens.Jwt;
+using TaskManager.Core.Contracts.Repository;
 using TaskManager.Core.Contracts.Services;
 using TaskManager.Core.Entities;
+using TaskManager.Core.Exceptions;
 using TaskManager.Core.Extentions;
 using TaskManager.Core.Models;
+using TaskManager.Infrastructure.Persistence.Repository;
 
 namespace TaskManager.Infrastructure.Services
 {
-    public class ParticipantService(IParticipantRepository participantRepository) : IParticipantService
+    public class ParticipantService(IParticipantRepository participantRepository, IMapper mapper, IUserRepository userRepository, IRoleRepository roleRepository, IProjectRepository projectRepository) : IParticipantService
     {
         private readonly IParticipantRepository _participantRepository = participantRepository;
-
-        public async Task<ParticipantModel> CreateAsync(ParticipantModel model)
+        private readonly IProjectRepository _projectRepository = projectRepository;
+        private readonly IUserRepository _userRepository = userRepository;
+        private readonly IRoleRepository _roleRepository = roleRepository;
+        private readonly IMapper _mapper = mapper;
+        public async Task<ParticipantModel> CreateAsync(ParticipantCreateModel model)
         {
-            var participant = new ProjectParticipant()
-            {
-                ProjectId = model.Id,
-                UserId = model.UserId,
-                RoleId = model.RoleId,
-            };
+            var task = ValidateDetails(model.ProjectId,model.UserId,model.RoleId);
+
+            var participant = _mapper.Map<ProjectParticipant>(model);
+            participant.Id = Guid.NewGuid();
+
+            await task;
             participant = await _participantRepository.AddAsync(participant);
-            model.Id = participant.Id;
-            return model;
+            return _mapper.Map<ParticipantModel>(participant);
         }
 
         public async Task DeleteAsync(Guid id)
@@ -38,12 +44,31 @@ namespace TaskManager.Infrastructure.Services
         public async Task<ParticipantModel> GetByIdAsync(Guid id)
         {
             var participant = await _participantRepository.GetByIdAsync(id);
-            return participant.ToModel();
+
+            return _mapper.Map<ParticipantModel>(participant);
         }
 
-        public async Task UpdateAsync(ParticipantModel model)
+        public async Task UpdateAsync(Guid id, ParticipantUpdateModel model)
         {
-            await _participantRepository.UpdateAsync(model.ToEntity());
+            await ValidateDetails(model.ProjectId,model.UserId,model.RoleId);
+            var participant = _mapper.Map<ProjectParticipant>(model);
+
+
+            await _participantRepository.UpdateAsync(participant);
+        }
+
+        private async Task ValidateDetails(Guid projectId,Guid userId, Guid roleId)
+        {
+
+            var roleContaind = _roleRepository.ContainsdAsync(roleId);
+            var userContaind = _userRepository.ContainsdAsync(userId);
+            var projectContaind = _projectRepository.ContainsdAsync(projectId);
+            if (await roleContaind)
+                throw new BadRequestException("Invalid role uuid");
+            if (await userContaind)
+                throw new BadRequestException("Invalid user uuid");
+            if (await projectContaind)
+                throw new BadRequestException("Invalid project uuid");
         }
     }
 }

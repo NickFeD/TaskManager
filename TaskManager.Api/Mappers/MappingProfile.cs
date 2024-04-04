@@ -12,16 +12,8 @@ public class MappingProfile : Profile
         CreateMap<Board, BoardCreateModel>(MemberList.Destination).ReverseMap();
         CreateMap<Board, BoardUpdateModel>(MemberList.Destination).ReverseMap();
 
-        CreateMap<Product, ProductDeleteRequest>(MemberList.Destination).ReverseMap();
-
-        CreateMap<Product, ProductUpdateRequest>(MemberList.Destination).ReverseMap();
-
-        CreateMap<Category, CategoryCreateRequest>(MemberList.Destination).ReverseMap();
-
-        CreateMap<Category, CategoryResponse>(MemberList.Destination).ReverseMap();
-
-        CreateMap<Store, StoreCreateRequest>(MemberList.Destination).ReverseMap();
-
-        CreateMap<Store, StoreResponse>(MemberList.Destination).ReverseMap();
+        CreateMap<ProjectParticipant, ParticipantModel>(MemberList.Destination).ReverseMap();
+        CreateMap<ProjectParticipant, ParticipantCreateModel>(MemberList.Destination).ReverseMap();
+        CreateMap<ProjectParticipant, ParticipantUpdateModel>(MemberList.Destination).ReverseMap();
     }
 }

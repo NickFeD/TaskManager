@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using TaskManager.Api.Controllers.Abstracted;
 using TaskManager.Core.Contracts.Services;
+using TaskManager.Core.Exceptions;
 using TaskManager.Core.Extentions;
 using TaskManager.Core.Models.User;
+using Microsoft.AspNetCore.Http;
 
 namespace TaskManager.Api.Controllers
 {
@@ -20,7 +22,7 @@ namespace TaskManager.Api.Controllers
         /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(typeof(UserModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesDefaultResponseType]
         public IActionResult GetMy()
             => Ok(AuthUser.ToModel());
 
@@ -30,9 +32,8 @@ namespace TaskManager.Api.Controllers
         /// <param name="userModel"></param>
         /// <returns></returns>
         [HttpPut]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
         [ProducesDefaultResponseType]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> Update(UserUpdateModel userModel)
         {
             await _userService.UpdateAsync(AuthUser.Id, userModel);
@@ -45,13 +46,12 @@ namespace TaskManager.Api.Controllers
         /// <param name="isConfirmed"></param>
         /// <returns></returns>
         [HttpDelete]
-        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesDefaultResponseType]
         public async Task<IActionResult> Delete(bool isConfirmed)
         {
             if (!isConfirmed)
-                return BadRequest("Not confirmed");
+                throw new BadRequestException("Not confirmed");
             await _userService.DeleteAsync(AuthUser.Id);
             return NoContent();
         }
@@ -61,9 +61,8 @@ namespace TaskManager.Api.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("projects")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         [ProducesDefaultResponseType]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetMyProject()
         {
             var projects = await _userService.GetProjectsByUserIdAsync(AuthUser.Id);
