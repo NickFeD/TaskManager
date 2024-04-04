@@ -75,7 +75,7 @@ namespace TaskManager.Api.Controllers
         [ProducesDefaultResponseType]
         public async Task<IActionResult> Update(Guid id, ParticipantUpdateModel model)
         {
-            await _participantService.UpdateAsync(id,model);
+            await _participantService.UpdateAsync(id, model);
             return NoContent();
         }
     }

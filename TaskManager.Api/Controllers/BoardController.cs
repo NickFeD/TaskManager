@@ -1,7 +1,5 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TaskManager.Api.Controllers.Abstracted;
 using TaskManager.Core.Contracts.Services;
 using TaskManager.Core.Models;
 
@@ -13,7 +11,7 @@ namespace TaskManager.Api.Controllers
     public class BoardController(IBoardService boardService) : ControllerBase //ICRUDController<BoardModel, Guid>
     {
         private readonly IBoardService _boardService = boardService;
-        
+
         /// <summary>
         /// Create a desk
         /// </summary>

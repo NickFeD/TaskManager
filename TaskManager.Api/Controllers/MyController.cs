@@ -5,7 +5,6 @@ using TaskManager.Core.Contracts.Services;
 using TaskManager.Core.Exceptions;
 using TaskManager.Core.Extentions;
 using TaskManager.Core.Models.User;
-using Microsoft.AspNetCore.Http;
 
 namespace TaskManager.Api.Controllers
 {

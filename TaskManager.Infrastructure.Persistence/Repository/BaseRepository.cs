@@ -62,10 +62,9 @@ public class BaseRepository<T, TId> : IRepository<T, TId> where T : class, IEnti
     public Task<T?> GetFirstByConditionAsync(Expression<Func<T, bool>> filter)
         => table.AsNoTracking().FirstOrDefaultAsync(filter);
 
-    public async Task<bool> ContainsdAsync(TId id)
-    {
-        return await ContainsdByConditionAsync(e => e.Id!.Equals(id));
-    }
+    public  Task<bool> ContainsdAsync(TId id)
+        => ContainsdByConditionAsync(e => e.Id!.Equals(id));
+    
 
     public async Task<bool> ContainsdByConditionAsync(Expression<Func<T, bool>> filter)
     {

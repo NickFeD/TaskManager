@@ -18,7 +18,7 @@ namespace TaskManager.Infrastructure.Services
             var board = _mapper.Map<Board>(model);
             board.Id = Guid.NewGuid();
             board.CreationData = DateTime.UtcNow;
-            if (await containd)
+            if (!await containd)
                 throw new BadRequestException("Invalid project uuid");
 
             board = await _boardRepository.AddAsync(board);
