@@ -4,7 +4,7 @@ using TaskManager.Infrastructure.Persistence.Configurations;
 
 namespace TaskManager.Infrastructure.Persistence;
 
-public class TaskManagerDbContext: DbContext
+public class TaskManagerDbContext : DbContext
 {
     public TaskManagerDbContext(DbContextOptions options) : base(options)
     {

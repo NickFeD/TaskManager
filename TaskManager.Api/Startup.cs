@@ -34,7 +34,7 @@ namespace TaskManager.Api
             {
                 options.SwaggerDoc("v1", new OpenApiInfo { Title = "TaskEntity Manager API", Version = "v1" });
                 options.AddSecurityDefinition(
-                    JwtBearerDefaults.AuthenticationScheme, 
+                    JwtBearerDefaults.AuthenticationScheme,
                     new OpenApiSecurityScheme
                     {
                         Description = "This site use Bearer token and you have to pass" +

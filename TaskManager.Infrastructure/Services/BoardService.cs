@@ -1,20 +1,29 @@
-﻿using TaskManager.Core.Contracts.Repository;
+﻿using AutoMapper;
+using TaskManager.Core.Contracts.Repository;
 using TaskManager.Core.Contracts.Services;
-using TaskManager.Core.Extentions;
+using TaskManager.Core.Entities;
+using TaskManager.Core.Exceptions;
 using TaskManager.Core.Models;
 
 namespace TaskManager.Infrastructure.Services
 {
-    public class BoardService(IBoardRepository boardRepository) : IBoardService
+    public class BoardService(IBoardRepository boardRepository, IMapper mapper, IProjectRepository projectRepository) : IBoardService
     {
         private readonly IBoardRepository _boardRepository = boardRepository;
-
-        public async Task<BoardModel> CreateAsync(BoardModel model)
+        private readonly IProjectRepository _projectRepository = projectRepository;
+        private readonly IMapper _mapper = mapper;
+        public async Task<BoardModel> CreateAsync(BoardCreateModel model)
         {
-            var board = model.ToEntity();
+            var containd = _projectRepository.ContainsdAsync(model.ProjectId);
+            var board = _mapper.Map<Board>(model);
+            board.Id = Guid.NewGuid();
+            board.CreationData = DateTime.UtcNow;
+            if (await containd)
+                throw new BadRequestException("Invalid project uuid");
+
             board = await _boardRepository.AddAsync(board);
-            model.Id = board.Id;
-            return model;
+
+            return _mapper.Map<BoardModel>(board);
         }
 
         public Task DeleteAsync(Guid id)
@@ -23,20 +32,21 @@ namespace TaskManager.Infrastructure.Services
         public async Task<IEnumerable<BoardModel>> GetAllAsync()
         {
             return (await _boardRepository.GetAllAsync())
-                .Select(m => m.ToModel()).ToList();
+                .Select(b => _mapper.Map<BoardModel>(b)).ToList();
         }
 
         public async Task<BoardModel> GetByIdAsync(Guid id)
         {
             var board = await _boardRepository.GetByIdAsync(id);
-            return board.ToModel();
+            return _mapper.Map<BoardModel>(board);
         }
 
-        public async Task UpdateAsync(BoardModel model)
+        public async Task UpdateAsync(Guid id, BoardUpdateModel model)
         {
-            await _boardRepository.UpdateAsync(model.ToEntity());
+            var board = _mapper.Map<Board>(model);
+            board.Id = id;
+
+            await _boardRepository.UpdateAsync(board);
         }
-
-
     }
 }

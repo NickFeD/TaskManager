@@ -1,16 +1,17 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.Text;
 using TaskManager.Api.ExceptionHandling;
+using TaskManager.Api.Mappers;
 using TaskManager.Core.Contracts.Repository;
 using TaskManager.Core.Contracts.Services;
-using TaskManager.Infrastructure.Persistence.Repository;
 using TaskManager.Infrastructure.Persistence;
+using TaskManager.Infrastructure.Persistence.Repository;
 using TaskManager.Infrastructure.Services;
-using Microsoft.EntityFrameworkCore;
 
 namespace TaskManager.Api;
 public class Program
@@ -23,6 +24,7 @@ public class Program
         builder.Services.AddExceptionHandler<DefaultExceptionHandler>();
 
         builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddAutoMapper(typeof(MappingProfile));
 
         builder.Services.AddSwaggerGen(options =>
         {
@@ -106,6 +108,7 @@ public class Program
         builder.Services.AddScoped<ITaskRepository, TaskRepository>();
         builder.Services.AddScoped<IUserRepository, UserRepository>();
 
+
         //add Services
         builder.Services.AddScoped<IBoardService, BoardService>();
         builder.Services.AddScoped<IEncryptService, EncryptService>();
@@ -120,9 +123,17 @@ public class Program
         // Add builder.Services to the container.
         builder.Services.AddConnections();
 
-        string? connection = builder.Configuration.GetConnectionString("PostgreSql")?? throw new Exception("PostgreSql not found in configuration");
+        string? connection = builder.Configuration.GetConnectionString("PostgreSql") ?? throw new Exception("PostgreSql not found in configuration");
 
         builder.Services.AddDbContext<TaskManagerDbContext>(options => options.UseNpgsql(connection));
+
+        builder.Services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = "redis://red-co78oiud3nmc73e67tag:6379";
+            options.InstanceName = "task_manager";
+        });
+
+
 
         builder.Services.AddControllers();
 

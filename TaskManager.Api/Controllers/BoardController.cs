@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskManager.Api.Controllers.Abstracted;
 using TaskManager.Core.Contracts.Services;
@@ -9,10 +10,10 @@ namespace TaskManager.Api.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class BoardController(IBoardService boardService) : ControllerBase, ICRUDController<BoardModel, Guid>
+    public class BoardController(IBoardService boardService) : ControllerBase, //ICRUDController<BoardModel, Guid>
     {
         private readonly IBoardService _boardService = boardService;
-
+        
         /// <summary>
         /// Create a desk
         /// </summary>
@@ -20,8 +21,9 @@ namespace TaskManager.Api.Controllers
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(typeof(BoardModel), StatusCodes.Status201Created)]
-        public async Task<IActionResult> Create(BoardModel model)
+        public async Task<IActionResult> Create(BoardCreateModel model)
         {
+
             var modelToCreate = await _boardService.CreateAsync(model);
             return CreatedAtAction(nameof(GetById), new { id = modelToCreate.Id }, modelToCreate);
         }
@@ -71,9 +73,9 @@ namespace TaskManager.Api.Controllers
         /// <returns></returns>
         [HttpPut]
         [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Update(Guid id, BoardModel model)
+        public async Task<IActionResult> Update(Guid id, BoardUpdateModel model)
         {
-            await _boardService.UpdateAsync(model);
+            await _boardService.UpdateAsync(id, model);
             return Ok();
         }
     }
