@@ -8,7 +8,7 @@ public class TaskManagerDbContext: DbContext
 {
     public TaskManagerDbContext(DbContextOptions options) : base(options)
     {
-        Database.Migrate();
+        //Database.Migrate();
     }
 
     public DbSet<UserRefreshToken> UserRefreshToken { get; set; }
