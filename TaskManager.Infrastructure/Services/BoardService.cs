@@ -14,8 +14,8 @@ public class BoardService(TaskManagerDbContext context) : IBoardService
 
     public async Task<BoardModel> CreateAsync(BoardCreateModel model)
     {
-        var containdProjects = _context.Projects.AnyAsync(p=>p.Id == model.ProjectId);
-        
+        var containdProjects = _context.Projects.AnyAsync(p => p.Id == model.ProjectId);
+
         var board = model.Adapt<Board>();
         board.Id = Guid.NewGuid();
         board.CreationData = DateTime.UtcNow;
@@ -30,7 +30,7 @@ public class BoardService(TaskManagerDbContext context) : IBoardService
     }
 
     public Task DeleteAsync(Guid id)
-        => _context.Boards.Where(p=>p.Id == id).ExecuteDeleteAsync();
+        => _context.Boards.Where(p => p.Id == id).ExecuteDeleteAsync();
 
     public Task<List<BoardModel>> GetAllAsync()
     {
@@ -39,7 +39,7 @@ public class BoardService(TaskManagerDbContext context) : IBoardService
 
     public async Task<BoardModel> GetByIdAsync(Guid id)
     {
-        var board = await _context.Boards.AsNoTracking().ProjectToType<BoardModel>().SingleOrDefaultAsync(p =>p.Id == id);
+        var board = await _context.Boards.AsNoTracking().ProjectToType<BoardModel>().SingleOrDefaultAsync(p => p.Id == id);
 
         if (board is null)
             throw new NotFoundException("Invalid board uuid");

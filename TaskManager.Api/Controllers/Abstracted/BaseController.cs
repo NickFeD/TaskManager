@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using TaskManager.Core.Contracts.Services;
 using TaskManager.Core.Entities;
 using TaskManager.Core.Exceptions;
+using TaskManager.Infrastructure.Persistence;
 
 namespace TaskManager.Api.Controllers.Abstracted;
 
@@ -14,11 +16,10 @@ public class BaseController : ControllerBase
             if (_authUser is not null)
                 return _authUser;
 
-            _authUser = HttpContext.Items["user"] as User ?? throw new UnauthorizedException("Сould not identify the user");
+            _authUser = HttpContext.Items["user"] as User 
+                ?? throw new UnauthorizedException("Сould not identify the user");
             _authUser.LastLoginData = DateTime.UtcNow;
             return _authUser;
         }
     }
-
-    //public Task<bool> Permission
 }

@@ -15,7 +15,7 @@ public class RoleService(TaskManagerDbContext context) : IRoleService
     public async Task<RoleModel> CreateAsync(RoleCreateModel model)
     {
         var taskContains = _context.Projects.AnyAsync(p => p.Id == p.Id);
-        var role =model.Adapt<Role>();
+        var role = model.Adapt<Role>();
         role.Id = Guid.NewGuid();
 
         if (!await taskContains)

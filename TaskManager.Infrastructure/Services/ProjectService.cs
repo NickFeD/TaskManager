@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using TaskManager.Core.Contracts.Services;
 using TaskManager.Core.Entities;
 using TaskManager.Core.Exceptions;
+using TaskManager.Core.Models;
 using TaskManager.Core.Models.Project;
 using TaskManager.Infrastructure.Persistence;
 
@@ -106,6 +107,11 @@ namespace TaskManager.Infrastructure.Services
 
             if (count < 1)
                 throw new NotFoundException("Invalid project uuid");
+        }
+
+        public Task<List<BoardModel>> GetByIdBoard(Guid id)
+        {
+            return _context.Boards.Where(b=>b.ProjectId == id).ProjectToType<BoardModel>().ToListAsync();
         }
     }
 }

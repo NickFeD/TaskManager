@@ -6,7 +6,7 @@ namespace TaskManager.Core.Contracts.Services
     {
         Task<ParticipantModel> CreateAsync(ParticipantCreateModel model);
         Task DeleteAsync(Guid id);
-        Task<IEnumerable<ParticipantModel>> GetAllAsync();
+        Task<List<ParticipantModel>> GetAllAsync();
         Task<ParticipantModel> GetByIdAsync(Guid id);
         Task UpdateAsync(Guid id, ParticipantUpdateModel model);
     }

@@ -1,11 +1,8 @@
 ﻿using Mapster;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Frozen;
-using TaskManager.Core.Contracts.Repository;
 using TaskManager.Core.Contracts.Services;
 using TaskManager.Core.Entities;
 using TaskManager.Core.Exceptions;
-using TaskManager.Core.Extentions;
 using TaskManager.Core.Models;
 using TaskManager.Core.Models.Project;
 using TaskManager.Core.Models.User;
@@ -53,7 +50,7 @@ namespace TaskManager.Infrastructure.Services
         }
 
         public async Task UpdateAsync(Guid id, UserUpdateModel model)
-        { 
+        {
             var count = await _context.Users.Where(u => u.Id == id)
                 .ExecuteUpdateAsync(setters => setters
                 .SetProperty(p => p.FirstName, model.FirstName)
@@ -82,9 +79,9 @@ namespace TaskManager.Infrastructure.Services
         public async Task<IEnumerable<UserRoleModel>> GetByProjectId(Guid projectId)
         {
             var userRoles = await _context.Participant
-                .Where(p=>p.ProjectId == projectId)
-                .Include(p=>p.User)
-                .Include(p=>p.Role)
+                .Where(p => p.ProjectId == projectId)
+                .Include(p => p.User)
+                .Include(p => p.Role)
                 .ProjectToType<UserRoleModel>()
                 .ToListAsync();
             return userRoles;

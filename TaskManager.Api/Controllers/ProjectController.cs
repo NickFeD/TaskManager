@@ -3,15 +3,17 @@ using Microsoft.AspNetCore.Mvc;
 using TaskManager.Api.Controllers.Abstracted;
 using TaskManager.Core.Contracts.Services;
 using TaskManager.Core.Models.Project;
+using TaskManager.Infrastructure.Services;
 
 namespace TaskManager.Api.Controllers
 {
     [Authorize]
     [ApiController]
     [Route("api/Project")]
-    public class ProjectController(IProjectService projectService, IUserService userService) : BaseController
+    public class ProjectController(IProjectService projectService, IPermissionService permissionService, IUserService userService) : BaseController
     {
         private readonly IProjectService _projectService = projectService;
+        private readonly IPermissionService _permissionService = permissionService;
         private readonly IUserService _userService = userService;
 
         /// <summary>
@@ -67,6 +69,7 @@ namespace TaskManager.Api.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Edit(Guid id, ProjectUpdateModel model)
         {
+            await _permissionService.Project(AuthUser.Id ,id,Core.Enums.AllowedProject.Edit);
             await _projectService.UpdateAsync(id, model);
             return Ok();
         }
@@ -75,6 +78,7 @@ namespace TaskManager.Api.Controllers
         [HttpPost("{id}/Users")]
         public async Task<IActionResult> AddUsers(Guid id, ProjectAddUsers addUsers)
         {
+            await _permissionService.Project(AuthUser.Id, id, Core.Enums.AllowedProject.Edit);
             await _projectService.AddUsers(id, addUsers.RoleId, addUsers.UserId);
             return Ok();
         }
@@ -83,6 +87,13 @@ namespace TaskManager.Api.Controllers
         public async Task<IActionResult> GetUsers(Guid id)
         {
             var response = await _userService.GetByProjectId(id);
+            return Ok(response);
+        }
+
+        [HttpGet("{id}/board")]
+        public async Task<IActionResult> GetBoard(Guid id)
+        {
+            var response = await _projectService.GetByIdBoard(id);
             return Ok(response);
         }
     }

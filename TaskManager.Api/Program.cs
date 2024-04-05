@@ -112,6 +112,7 @@ public class Program
         builder.Services.AddScoped<IEncryptService, EncryptService>();
         builder.Services.AddScoped<IJwtService, JwtService>();
         builder.Services.AddScoped<IParticipantService, ParticipantService>();
+        builder.Services.AddScoped<IPermissionService, PermissionService>();
         builder.Services.AddScoped<IProjectService, ProjectService>();
         builder.Services.AddScoped<IRoleService, RoleService>();
         builder.Services.AddScoped<ITaskService, TaskService>();
@@ -121,7 +122,8 @@ public class Program
         // Add builder.Services to the container.
         builder.Services.AddConnections();
 
-        string? connection = builder.Configuration.GetConnectionString("PostgreSql") ?? throw new Exception("PostgreSql not found in configuration");
+        string? connection = builder.Configuration.GetConnectionString("PostgreSql") 
+            ?? throw new Exception("PostgreSql not found in configuration");
 
         builder.Services.AddDbContext<TaskManagerDbContext>(options => options.UseNpgsql(connection));
 

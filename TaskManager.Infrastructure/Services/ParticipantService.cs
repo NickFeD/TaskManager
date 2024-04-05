@@ -1,69 +1,73 @@
 ﻿using Mapster;
-using TaskManager.Core.Contracts.Repository;
+using Microsoft.EntityFrameworkCore;
 using TaskManager.Core.Contracts.Services;
 using TaskManager.Core.Entities;
 using TaskManager.Core.Exceptions;
-using TaskManager.Core.Extentions;
 using TaskManager.Core.Models;
+using TaskManager.Infrastructure.Persistence;
 
 namespace TaskManager.Infrastructure.Services
 {
-    public class ParticipantService(IParticipantRepository participantRepository, IUserRepository userRepository, IRoleRepository roleRepository, IProjectRepository projectRepository) : IParticipantService
+    public class ParticipantService(TaskManagerDbContext context) : IParticipantService
     {
-        private readonly IParticipantRepository _participantRepository = participantRepository;
-        private readonly IProjectRepository _projectRepository = projectRepository;
-        private readonly IUserRepository _userRepository = userRepository;
-        private readonly IRoleRepository _roleRepository = roleRepository;
+        private readonly TaskManagerDbContext _context = context;
+
         public async Task<ParticipantModel> CreateAsync(ParticipantCreateModel model)
         {
-            var task = ValidateDetails(model.ProjectId, model.UserId, model.RoleId);
+            await ValidateDetails(model.ProjectId, model.UserId, model.RoleId);
 
             var participant = model.Adapt<ProjectParticipant>();
             participant.Id = Guid.NewGuid();
 
-            await task;
-            participant = await _participantRepository.AddAsync(participant);
+            await _context.Participant.AddAsync(participant);
             return participant.Adapt<ParticipantModel>();
         }
 
-        public async Task DeleteAsync(Guid id)
-        {
-            await _participantRepository.DeleteAsync(id);
-        }
+        public Task DeleteAsync(Guid id)
+            => _context.Participant.Where(p => p.Id == id).ExecuteDeleteAsync();
 
-        public async Task<IEnumerable<ParticipantModel>> GetAllAsync()
+        public Task<List<ParticipantModel>> GetAllAsync()
         {
-
-            var participant = (await _participantRepository.GetAllAsync()).Select(p => p.ToModel());
-            return participant.ToList();
+            return _context.Participant.AsNoTracking().ProjectToType<ParticipantModel>().ToListAsync();
         }
 
         public async Task<ParticipantModel> GetByIdAsync(Guid id)
         {
-            var participant = await _participantRepository.GetByIdAsync(id);
+            var participant = await _context.Participant.AsNoTracking().ProjectToType<ParticipantModel>().SingleOrDefaultAsync(p => p.Id == id);
 
-            return participant.Adapt<ParticipantModel>();
+            if (participant is null)
+                throw new NotFoundException("Invalid participant uuid");
+
+            return participant;
         }
 
         public async Task UpdateAsync(Guid id, ParticipantUpdateModel model)
         {
             await ValidateDetails(model.ProjectId, model.UserId, model.RoleId);
-            var participant = model.Adapt<ProjectParticipant>();
 
+            var count = await _context.Participant.Where(p => p.Id == id)
+                .ExecuteUpdateAsync(setters => setters
+                .SetProperty(p => p.UserId, model.UserId)
+                .SetProperty(p => p.ProjectId, model.ProjectId)
+                .SetProperty(p => p.RoleId, model.RoleId));
 
-            await _participantRepository.UpdateAsync(participant);
+            if (count < 1)
+                throw new NotFoundException("Invalid participant uuid");
         }
 
         private async Task ValidateDetails(Guid projectId, Guid userId, Guid roleId)
         {
 
-            var roleContaind = _roleRepository.ContainsdAsync(roleId);
-            var userContaind = _userRepository.ContainsdAsync(userId);
-            var projectContaind = _projectRepository.ContainsdAsync(projectId);
+            var roleContaind = _context.Roles.AnyAsync(r => r.Id == roleId);
+            var userContaind = _context.Users.AnyAsync(u => u.Id == userId);
+            var projectContaind = _context.Projects.AnyAsync(u => u.Id == projectId);
+
             if (await roleContaind)
                 throw new BadRequestException("Invalid role uuid");
+
             if (await userContaind)
                 throw new BadRequestException("Invalid user uuid");
+
             if (await projectContaind)
                 throw new BadRequestException("Invalid project uuid");
         }

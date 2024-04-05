@@ -20,7 +20,7 @@ namespace TaskManager.Api.Controllers
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(typeof(TaskModel), StatusCodes.Status201Created)]
-        public async Task<IActionResult> Create([FromBody] TaskModel model)
+        public async Task<IActionResult> Create([FromBody] TaskCreateModel model)
         {
             var modelToCreate = await _taskService.CreateAsync(model);
             return CreatedAtAction(nameof(GetById), new { id = modelToCreate.Id }, modelToCreate);
@@ -72,15 +72,7 @@ namespace TaskManager.Api.Controllers
         [HttpPut]
         public async Task<IActionResult> Update(Guid id, TaskUpdateModel updateModel)
         {
-            var model = new TaskModel()
-            {
-                Description = updateModel.Description,
-                Name = updateModel.Name,
-                BoardId = updateModel.BoardId,
-                EndDate = updateModel.EndDate,
-                StartDate = updateModel.StartDate,
-            };
-            await _taskService.UpdateAsync(model);
+            await _taskService.UpdateAsync(id, updateModel);
             return Ok();
         }
     }
