@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
+﻿using Mapster;
 using Microsoft.EntityFrameworkCore;
 using TaskManager.Core.Contracts.Services;
 using TaskManager.Core.Entities;
@@ -9,10 +8,9 @@ using TaskManager.Infrastructure.Persistence;
 
 namespace TaskManager.Infrastructure.Services
 {
-    public class ProjectService(TaskManagerDbContext context, IMapper mapper) : IProjectService
+    public class ProjectService(TaskManagerDbContext context) : IProjectService
     {
         private readonly TaskManagerDbContext _context = context;
-        private readonly IMapper _mapper = mapper;
 
         public async Task UpdateAsync(Guid id, ProjectUpdateModel model)
         {
@@ -51,14 +49,14 @@ namespace TaskManager.Infrastructure.Services
 
         public async Task<IEnumerable<ProjectModel>> GetAllAsync()
         {
-            var project = await _context.Projects.AsNoTracking().ProjectTo<ProjectModel>(_mapper.ConfigurationProvider).ToListAsync();
+            var project = await _context.Projects.AsNoTracking().ProjectToType<ProjectModel>().ToListAsync();
 
             return project;
         }
 
         public async Task<ProjectModel> GetByIdAsync(Guid id)
         {
-            var project = await _context.Projects.AsNoTracking().ProjectTo<ProjectModel>(_mapper.ConfigurationProvider).FirstOrDefaultAsync(p => p.Id == id);
+            var project = await _context.Projects.AsNoTracking().ProjectToType<ProjectModel>().FirstOrDefaultAsync(p => p.Id == id);
 
             if (project is null)
                 throw new NotFoundException("Invalid project uuid");
@@ -82,7 +80,7 @@ namespace TaskManager.Infrastructure.Services
                 Role = role,
                 UserId = model.CreatorId!.Value,
             };
-            var project = _mapper.Map<Project>(model);
+            var project = model.Adapt<Project>();
             project.Status = Core.Enums.ProjectStatus.InProgress;
             project.CreationData = DateTime.UtcNow;
             project.Participants.Add(participant);
@@ -99,7 +97,7 @@ namespace TaskManager.Infrastructure.Services
             await _context.Projects.AddAsync(project);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<ProjectModel>(project);
+            return project.Adapt<ProjectModel>();
         }
 
         public async Task DeleteAsync(Guid id)

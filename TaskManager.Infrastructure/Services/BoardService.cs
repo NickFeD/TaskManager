@@ -1,55 +1,61 @@
-﻿using AutoMapper;
-using TaskManager.Core.Contracts.Repository;
+﻿using Mapster;
+using Microsoft.EntityFrameworkCore;
 using TaskManager.Core.Contracts.Services;
 using TaskManager.Core.Entities;
 using TaskManager.Core.Exceptions;
 using TaskManager.Core.Models;
+using TaskManager.Infrastructure.Persistence;
 
-namespace TaskManager.Infrastructure.Services
+namespace TaskManager.Infrastructure.Services;
+
+public class BoardService(TaskManagerDbContext context) : IBoardService
 {
-    public class BoardService(IBoardRepository boardRepository, IMapper mapper, IProjectRepository projectRepository) : IBoardService
+    private readonly TaskManagerDbContext _context = context;
+
+    public async Task<BoardModel> CreateAsync(BoardCreateModel model)
     {
-        private readonly IBoardRepository _boardRepository = boardRepository;
-        private readonly IProjectRepository _projectRepository = projectRepository;
-        private readonly IMapper _mapper = mapper;
-        public async Task<BoardModel> CreateAsync(BoardCreateModel model)
-        {
-            var containd = _projectRepository.ContainsdAsync(model.ProjectId);
-            var board = _mapper.Map<Board>(model);
-            board.Id = Guid.NewGuid();
-            board.CreationData = DateTime.UtcNow;
-            if (!await containd)
-                throw new BadRequestException("Invalid project uuid");
+        var containdProjects = _context.Projects.AnyAsync(p=>p.Id == model.ProjectId);
+        
+        var board = model.Adapt<Board>();
+        board.Id = Guid.NewGuid();
+        board.CreationData = DateTime.UtcNow;
 
-            board = await _boardRepository.AddAsync(board);
+        if (!await containdProjects)
+            throw new BadRequestException("Invalid project uuid");
 
-            return _mapper.Map<BoardModel>(board);
-        }
+        await _context.Boards.AddAsync(board);
+        await _context.SaveChangesAsync();
 
-        public Task DeleteAsync(Guid id)
-            => _boardRepository.DeleteAsync(id);
+        return board.Adapt<BoardModel>();
+    }
 
-        public async Task<IEnumerable<BoardModel>> GetAllAsync()
-        {
-            return (await _boardRepository.GetAllAsync())
-                .Select(b => _mapper.Map<BoardModel>(b)).ToList();
-        }
+    public Task DeleteAsync(Guid id)
+        => _context.Boards.Where(p=>p.Id == id).ExecuteDeleteAsync();
 
-        public async Task<BoardModel> GetByIdAsync(Guid id)
-        {
-            var board = await _boardRepository.GetByIdAsync(id);
-            return _mapper.Map<BoardModel>(board);
-        }
+    public Task<List<BoardModel>> GetAllAsync()
+    {
+        return _context.Boards.ProjectToType<BoardModel>().ToListAsync();
+    }
 
-        public async Task UpdateAsync(Guid id, BoardUpdateModel model)
-        {
-            var board = await _boardRepository.GetByIdAsync(id);
-            if (board is null)
-                throw new BadRequestException("Invalid board uuid");
-            board.Description = model.Description;
-            board.Name = model.Name;
+    public async Task<BoardModel> GetByIdAsync(Guid id)
+    {
+        var board = await _context.Boards.AsNoTracking().ProjectToType<BoardModel>().SingleOrDefaultAsync(p =>p.Id == id);
 
-            await _boardRepository.UpdateAsync(board);
-        }
+        if (board is null)
+            throw new NotFoundException("Invalid board uuid");
+
+        return board;
+    }
+
+    public async Task UpdateAsync(Guid id, BoardUpdateModel model)
+    {
+        var count = await _context.Boards
+            .Where(p => p.Id == id)
+            .ExecuteUpdateAsync(setters => setters
+            .SetProperty(p => p.Name, model.Name)
+            .SetProperty(p => p.Description, model.Description));
+
+        if (count < 1)
+            throw new NotFoundException("Invalid board uuid");
     }
 }

@@ -1,4 +1,3 @@
-using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.JsonWebTokens;
@@ -7,7 +6,6 @@ using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.Text;
 using TaskManager.Api.ExceptionHandling;
-using TaskManager.Api.Mappers;
 using TaskManager.Core.Contracts.Repository;
 using TaskManager.Core.Contracts.Services;
 using TaskManager.Infrastructure.Persistence;
@@ -25,16 +23,6 @@ public class Program
         builder.Services.AddExceptionHandler<DefaultExceptionHandler>();
 
         builder.Services.AddEndpointsApiExplorer();
-
-        // Auto Mapper Configurations
-        var mapperConfig = new MapperConfiguration(mc =>
-        {
-            mc.AddProfile(new MappingProfile());
-        });
-
-        IMapper mapper = mapperConfig.CreateMapper();
-        builder.Services.AddSingleton(mapper);
-
 
         builder.Services.AddSwaggerGen(options =>
         {

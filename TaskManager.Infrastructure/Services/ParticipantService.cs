@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using Mapster;
 using TaskManager.Core.Contracts.Repository;
 using TaskManager.Core.Contracts.Services;
 using TaskManager.Core.Entities;
@@ -8,23 +8,22 @@ using TaskManager.Core.Models;
 
 namespace TaskManager.Infrastructure.Services
 {
-    public class ParticipantService(IParticipantRepository participantRepository, IMapper mapper, IUserRepository userRepository, IRoleRepository roleRepository, IProjectRepository projectRepository) : IParticipantService
+    public class ParticipantService(IParticipantRepository participantRepository, IUserRepository userRepository, IRoleRepository roleRepository, IProjectRepository projectRepository) : IParticipantService
     {
         private readonly IParticipantRepository _participantRepository = participantRepository;
         private readonly IProjectRepository _projectRepository = projectRepository;
         private readonly IUserRepository _userRepository = userRepository;
         private readonly IRoleRepository _roleRepository = roleRepository;
-        private readonly IMapper _mapper = mapper;
         public async Task<ParticipantModel> CreateAsync(ParticipantCreateModel model)
         {
             var task = ValidateDetails(model.ProjectId, model.UserId, model.RoleId);
 
-            var participant = _mapper.Map<ProjectParticipant>(model);
+            var participant = model.Adapt<ProjectParticipant>();
             participant.Id = Guid.NewGuid();
 
             await task;
             participant = await _participantRepository.AddAsync(participant);
-            return _mapper.Map<ParticipantModel>(participant);
+            return participant.Adapt<ParticipantModel>();
         }
 
         public async Task DeleteAsync(Guid id)
@@ -43,13 +42,13 @@ namespace TaskManager.Infrastructure.Services
         {
             var participant = await _participantRepository.GetByIdAsync(id);
 
-            return _mapper.Map<ParticipantModel>(participant);
+            return participant.Adapt<ParticipantModel>();
         }
 
         public async Task UpdateAsync(Guid id, ParticipantUpdateModel model)
         {
             await ValidateDetails(model.ProjectId, model.UserId, model.RoleId);
-            var participant = _mapper.Map<ProjectParticipant>(model);
+            var participant = model.Adapt<ProjectParticipant>();
 
 
             await _participantRepository.UpdateAsync(participant);

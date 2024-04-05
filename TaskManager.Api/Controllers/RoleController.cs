@@ -21,16 +21,7 @@ namespace TaskManager.Api.Controllers
         [ProducesDefaultResponseType]
         public async Task<IActionResult> Create([FromBody] RoleCreateModel createModel)
         {
-            var model = new RoleModel()
-            {
-                Id = Guid.NewGuid(),
-                Name = createModel.Name,
-                ProjectId = createModel.ProjectId,
-                AllowedAddUsersProject = createModel.AllowedAddUsersProject,
-                AllowedDeleteProject = createModel.AllowedDeleteProject,
-                AllowedEditProject = createModel.AllowedEditProject,
-            };
-            var modelToCreate = await _roleService.CreateAsync(model);
+            var modelToCreate = await _roleService.CreateAsync(createModel);
             return CreatedAtAction(nameof(GetById), new { id = modelToCreate.Id }, modelToCreate);
         }
 
@@ -78,15 +69,7 @@ namespace TaskManager.Api.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, RoleUpdateModel model)
         {
-            var role = new RoleModel()
-            {
-                Id = id,
-                Name = model.Name,
-                AllowedAddUsersProject = model.AllowedAddUsersProject,
-                AllowedDeleteProject = model.AllowedDeleteProject,
-                AllowedEditProject = model.AllowedEditProject,
-            };
-            await _roleService.UpdateAsync(role);
+            await _roleService.UpdateAsync(id, model);
             return Ok();
         }
     }

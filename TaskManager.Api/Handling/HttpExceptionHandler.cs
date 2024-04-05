@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using TaskManager.Core.Exceptions;
 
 namespace TaskManager.Api.ExceptionHandling
@@ -11,6 +12,7 @@ namespace TaskManager.Api.ExceptionHandling
 
             if (exception is HttpException httpException)
             {
+               // _logger.LogInformation(httpException.Message);
                 _logger.LogError(exception, httpException.Message);
                 httpContext.Response.StatusCode = (int)httpException.StatusCodes;
                 await httpContext.Response.WriteAsJsonAsync(new ProblemDetails

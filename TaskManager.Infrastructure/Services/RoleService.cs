@@ -1,38 +1,61 @@
-﻿using TaskManager.Core.Contracts.Repository;
+﻿using Mapster;
+using Microsoft.EntityFrameworkCore;
 using TaskManager.Core.Contracts.Services;
-using TaskManager.Core.Extentions;
+using TaskManager.Core.Entities;
+using TaskManager.Core.Exceptions;
 using TaskManager.Core.Models;
+using TaskManager.Infrastructure.Persistence;
 
-namespace TaskManager.Infrastructure.Services
+namespace TaskManager.Infrastructure.Services;
+
+public class RoleService(TaskManagerDbContext context) : IRoleService
 {
-    public class RoleService(IRoleRepository roleRepository) : IRoleService
+    private readonly TaskManagerDbContext _context = context;
+
+    public async Task<RoleModel> CreateAsync(RoleCreateModel model)
     {
-        private readonly IRoleRepository _roleRepository = roleRepository;
+        var taskContains = _context.Projects.AnyAsync(p => p.Id == p.Id);
+        var role =model.Adapt<Role>();
+        role.Id = Guid.NewGuid();
 
-        public async Task<RoleModel> CreateAsync(RoleModel model)
-        {
-            model.Id = (await _roleRepository.AddAsync(model.ToEntity())).Id;
-            return model;
-        }
+        if (!await taskContains)
+            throw new BadRequestException("Invalid role uuid");
 
-        public Task DeleteAsync(Guid id)
-            => _roleRepository.DeleteAsync(id);
+        await _context.Roles.AddAsync(role);
+        await _context.SaveChangesAsync();
+        return role.Adapt<RoleModel>();
+    }
 
-        public async Task<IEnumerable<RoleModel>> GetAllAsync()
-        {
-            var roles = await _roleRepository.GetAllAsync();
-            return roles.Select(r => r.ToModel());
-        }
+    public async Task DeleteAsync(Guid id)
+    {
+        var count = await _context.Roles.Where(r => r.Id == id).ExecuteDeleteAsync();
+        if (count < 1)
+            throw new BadRequestException("Invalid role uuid");
+    }
 
-        public async Task<RoleModel> GetByIdAsync(Guid id)
-        {
-            var role = await _roleRepository.GetByIdAsync(id);
-            return role.ToModel();
-        }
+    public Task<List<RoleModel>> GetAllAsync()
+        => _context.Roles.ProjectToType<RoleModel>().ToListAsync();
 
-        public Task UpdateAsync(RoleModel model)
-            => _roleRepository.UpdateAsync(model.ToEntity());
+    public async Task<RoleModel> GetByIdAsync(Guid id)
+    {
+        var role = await _context.Roles.AsNoTracking().ProjectToType<RoleModel>().FirstOrDefaultAsync(r => r.Id == id);
+        if (role is null)
+            throw new BadRequestException("Invalid role uuid");
+        return role;
+    }
 
+    public async Task UpdateAsync(Guid id, RoleUpdateModel model)
+    {
+        var taskRole = _context.Roles.AnyAsync(r => r.Id == id);
+
+        var role = model.Adapt<Role>();
+        role.Id = id;
+        if (!await taskRole)
+            throw new BadRequestException("Invalid role uuid");
+
+        _context.Entry(role).State = EntityState.Modified;
+
+        await _context.SaveChangesAsync();
 
     }
 }

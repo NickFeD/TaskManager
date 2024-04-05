@@ -1,4 +1,6 @@
-﻿using System.Collections.Frozen;
+﻿using Mapster;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Frozen;
 using TaskManager.Core.Contracts.Repository;
 using TaskManager.Core.Contracts.Services;
 using TaskManager.Core.Entities;
@@ -7,30 +9,31 @@ using TaskManager.Core.Extentions;
 using TaskManager.Core.Models;
 using TaskManager.Core.Models.Project;
 using TaskManager.Core.Models.User;
+using TaskManager.Infrastructure.Persistence;
 
 namespace TaskManager.Infrastructure.Services
 {
-    public class UserService(IUserRepository userRepository, IParticipantRepository participantRepository, IRoleRepository roleRepository, IEncryptService encryptService) : IUserService
+    public class UserService(TaskManagerDbContext context, IEncryptService encryptService) : IUserService
     {
-        private readonly IUserRepository _userRepository = userRepository;
+        private readonly TaskManagerDbContext _context = context;
         private readonly IEncryptService _encryptService = encryptService;
-        private readonly IRoleRepository _roleRepository = roleRepository;
-        private readonly IParticipantRepository _participantRepository = participantRepository;
 
-        public async Task<List<UserModel>> GetAllAsync()
+        public Task<List<UserModel>> GetAllAsync()
         {
-            return (await _userRepository.GetAllAsync()).Select(u => u.ToModel()).ToList();
+            return _context.Users.ProjectToType<UserModel>().ToListAsync();
         }
 
         public async Task<UserModel> GetByIdAsync(Guid id)
         {
-            return (await _userRepository.GetByIdAsync(id)).ToModel();
+            return await _context.Users.AsNoTracking().ProjectToType<UserModel>().FirstOrDefaultAsync(u => u.Id == id)
+                ?? throw new BadRequestException("Invalid user uuid");
         }
 
         public async Task<UserModel> Registration(RegistrationModel registration)
         {
-            if (await _userRepository.ContainsdByConditionAsync(u => u.Email == registration.Email))
+            if (await _context.Users.AnyAsync(u => u.Email == registration.Email))
                 throw new BadRequestException($"By e-mail {registration.Email} the user is already registered");
+
             var salt = _encryptService.GenerateSalt();
             var user = new User()
             {
@@ -45,54 +48,46 @@ namespace TaskManager.Infrastructure.Services
                 Salt = salt,
                 Password = _encryptService.HashPassword(registration.Password, salt),
             };
-
-            return (await _userRepository.AddAsync(user)).ToModel();
+            await _context.Users.AddAsync(user);
+            return user.Adapt<UserModel>();
         }
 
         public async Task UpdateAsync(Guid id, UserUpdateModel model)
-        {
-            var user = await _userRepository.GetByIdAsync(id);
-            if (user is null)
-                throw new BadRequestException("Invalid user uuid");
-            user.FirstName = model.FirstName;
-            user.LastName = model.LastName;
-            user.Email = model.Email;
-            user.Phone = model.Phone;
-            user = await _userRepository.UpdateAsync(user);
+        { 
+            var count = await _context.Users.Where(u => u.Id == id)
+                .ExecuteUpdateAsync(setters => setters
+                .SetProperty(p => p.FirstName, model.FirstName)
+                .SetProperty(p => p.LastName, model.LastName)
+                .SetProperty(p => p.Email, model.Email)
+                .SetProperty(p => p.Phone, model.Phone));
+
+            if (count < 1)
+                throw new NotFoundException("Invalid project uuid");
         }
 
-        public async Task DeleteAsync(Guid id)
-        {
-            await _userRepository.DeleteAsync(id);
-        }
+        public Task DeleteAsync(Guid id)
+            => _context.Users.Where(u => u.Id == id).ExecuteDeleteAsync();
 
-        public async Task<IEnumerable<ProjectModel>> GetProjectsByUserIdAsync(Guid userId)
+        public Task<List<ProjectModel>> GetProjectsByUserIdAsync(Guid userId)
         {
-            var projects = await _participantRepository.GetProjectsByConditionAsync(p => p.UserId.Equals(userId));
-            return projects.Select(p => p.ToModel());
+            return _context.Participant
+                .AsNoTracking()
+                .Where(p => p.UserId.Equals(userId))
+                .Include(p => p.Project)
+                .Select(p => p.Project)
+                .ProjectToType<ProjectModel>()
+                .ToListAsync();
         }
 
         public async Task<IEnumerable<UserRoleModel>> GetByProjectId(Guid projectId)
         {
-            var participants = (await _participantRepository.GetByConditionAsync(p => p.ProjectId.Equals(projectId))).ToList();
-
-            var usersId = participants.Select(p => p.UserId).ToHashSet();
-            var rolesId = participants.Select(p => p.RoleId).ToHashSet();
-
-            var users = (await _userRepository.GetByConditionAsync(u => usersId.Contains(u.Id))).ToFrozenDictionary(u => u.Id);
-            var roles = (await _roleRepository.GetByConditionAsync(r => rolesId.Contains(r.Id))).ToFrozenDictionary(r => r.Id);
-
-            List<UserRoleModel> userRoleModels = new();
-            for (int i = 0; i < participants.Count(); i++)
-            {
-                userRoleModels.Add(new UserRoleModel()
-                {
-                    Role = roles[participants[i].RoleId!.Value].ToModel(),
-                    User = users[participants[i].UserId].ToModel()
-                });
-            }
-
-            return userRoleModels;
+            var userRoles = await _context.Participant
+                .Where(p=>p.ProjectId == projectId)
+                .Include(p=>p.User)
+                .Include(p=>p.Role)
+                .ProjectToType<UserRoleModel>()
+                .ToListAsync();
+            return userRoles;
         }
 
     }

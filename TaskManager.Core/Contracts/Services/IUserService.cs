@@ -10,7 +10,7 @@ public interface IUserService
     Task<List<UserModel>> GetAllAsync();
     Task<UserModel> GetByIdAsync(Guid id);
     Task<IEnumerable<UserRoleModel>> GetByProjectId(Guid projectId);
-    Task<IEnumerable<ProjectModel>> GetProjectsByUserIdAsync(Guid userId);
+    Task<List<ProjectModel>> GetProjectsByUserIdAsync(Guid userId);
     Task<UserModel> Registration(RegistrationModel user);
     Task UpdateAsync(Guid Id, UserUpdateModel model);
 }

@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using TaskManager.Api.Controllers.Abstracted;
 using TaskManager.Core.Contracts.Services;
-using TaskManager.Core.Exceptions;
 using TaskManager.Core.Extentions;
 using TaskManager.Core.Models.User;
 
