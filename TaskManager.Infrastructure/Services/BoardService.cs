@@ -47,6 +47,11 @@ public class BoardService(TaskManagerDbContext context) : IBoardService
         return board;
     }
 
+    public Task<List<TaskModel>> GetByIdTaskAsync(Guid id)
+    {
+        return _context.Tasks.Where(t => t.BoardId == id).ProjectToType<TaskModel>().ToListAsync();
+    }
+
     public async Task UpdateAsync(Guid id, BoardUpdateModel model)
     {
         var count = await _context.Boards
