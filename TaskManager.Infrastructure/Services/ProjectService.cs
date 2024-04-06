@@ -71,10 +71,14 @@ namespace TaskManager.Infrastructure.Services
             var role = new Role()
             {
                 Name = "Admin",
-                AllowedAddUsersProject = true,
-                AllowedDeleteProject = true,
-                AllowedEditProject = true,
-
+                ProjectAddUsers = true,
+                ProjectDelete = true,
+                ProjectDeleteUsers = true,
+                ProjectEdit = true,
+                BoardAdd = true,
+                BoardAddTasks = true,
+                BoardDelete = true,
+                BoardEdit = true,
             };
             var participant = new ProjectParticipant()
             {

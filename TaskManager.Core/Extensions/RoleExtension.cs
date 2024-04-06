@@ -12,9 +12,9 @@ public static class RoleExtension
             Id = role.Id,
             Name = role.Name,
             ProjectId = role.ProjectId,
-            AllowedAddUsersProject = role.AllowedAddUsersProject,
-            AllowedDeleteProject = role.AllowedDeleteProject,
-            AllowedEditProject = role.AllowedEditProject,
+            ProjectAddUsers = role.ProjectAddUsers,
+            ProjectDelete = role.ProjectDelete,
+            ProjectEdit = role.ProjectEdit,
         };
     }
 
@@ -25,9 +25,9 @@ public static class RoleExtension
             Id = roleModel.Id,
             Name = roleModel.Name,
             ProjectId = roleModel.ProjectId,
-            AllowedAddUsersProject = roleModel.AllowedAddUsersProject,
-            AllowedDeleteProject = roleModel.AllowedDeleteProject,
-            AllowedEditProject = roleModel.AllowedEditProject,
+            ProjectAddUsers = roleModel.ProjectAddUsers,
+            ProjectDelete = roleModel.ProjectDelete,
+            ProjectEdit = roleModel.ProjectEdit,
         };
     }
 }

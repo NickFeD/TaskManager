@@ -12,16 +12,17 @@ namespace TaskManager.Infrastructure.Services
     {
         private readonly TaskManagerDbContext _context = context;
 
-        public async Task<TaskModel> CreateAsync(TaskCreateModel model)
+        public async Task<TaskModel> CreateAsync(TaskEntity model)
         {
-            var taskEntity = model.Adapt<TaskEntity>();
-            taskEntity.Id = Guid.NewGuid();
-            taskEntity.CreationData = DateTime.UtcNow;
+            var isBoard = await _context.Boards.AnyAsync(b=>b.Id == model.BoardId);
 
-            await _context.Tasks.AddAsync(taskEntity);
+            if (!isBoard)
+                throw new BadRequestException("Invalid board uuid");
+
+            await _context.Tasks.AddAsync(model);
             await _context.SaveChangesAsync();
 
-            return taskEntity.Adapt<TaskModel>();
+            return model.Adapt<TaskModel>();
         }
 
         public async Task DeleteAsync(Guid id)
@@ -29,7 +30,7 @@ namespace TaskManager.Infrastructure.Services
             var count = await _context.Tasks.Where(p => p.Id == id).ExecuteDeleteAsync();
 
             if (count < 1)
-                throw new NotFoundException("Invalid task uuid");
+                throw new BadRequestException("Invalid board uuid");
         }
 
         public async Task<List<TaskModel>> GetAllAsync()
@@ -44,7 +45,7 @@ namespace TaskManager.Infrastructure.Services
             var taskModel = await _context.Tasks.AsNoTracking().ProjectToType<TaskModel>().SingleOrDefaultAsync(t => t.Id == id);
 
             if (taskModel is null)
-                throw new NotFoundException("Invalid task uuid");
+                throw new BadRequestException("Invalid board uuid");
 
             return taskModel;
         }
@@ -56,11 +57,10 @@ namespace TaskManager.Infrastructure.Services
                 .SetProperty(p => p.Name, model.Name)
                 .SetProperty(p => p.StartDate, model.StartDate)
                 .SetProperty(p => p.EndDate, model.EndDate)
-                .SetProperty(p => p.BoardId, model.BoardId)
                 .SetProperty(p => p.Description, model.Description));
 
             if (count < 1)
-                throw new NotFoundException("Invalid project uuid");
+                throw new BadRequestException("Invalid board uuid");
         }
     }
 }

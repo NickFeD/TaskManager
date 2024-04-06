@@ -2,8 +2,13 @@
 {
     public abstract class RoleAllowed
     {
-        public bool AllowedDeleteProject { get; set; } = false;
-        public bool AllowedEditProject { get; set; } = false;
-        public bool AllowedAddUsersProject { get; set; } = false;
+        public bool ProjectDelete { get; set; } = false;
+        public bool ProjectEdit { get; set; } = false;
+        public bool ProjectAddUsers { get; set; } = false;
+        public bool ProjectDeleteUsers { get; set; } = false;
+        public bool BoardAdd { get; set; } = false;
+        public bool BoardEdit { get; set; } = false;
+        public bool BoardDelete { get; set; } = false;
+        public bool BoardAddTasks { get; set; } = false;
     }
 }

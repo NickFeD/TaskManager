@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Mapster;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskManager.Api.Controllers.Abstracted;
 using TaskManager.Core.Contracts.Services;
+using TaskManager.Core.Entities;
 using TaskManager.Core.Models;
 
 namespace TaskManager.Api.Controllers
@@ -16,12 +18,18 @@ namespace TaskManager.Api.Controllers
         /// <summary>
         /// Create a task
         /// </summary>
-        /// <param name="model"></param>
+        /// <param name="createModel"></param>
         /// <returns></returns>
         [HttpPost]
-        [ProducesResponseType(typeof(TaskModel), StatusCodes.Status201Created)]
-        public async Task<IActionResult> Create([FromBody] TaskCreateModel model)
+        [ProducesResponseType(typeof(TaskCreateModel), StatusCodes.Status201Created)]
+        public async Task<IActionResult> Create([FromBody] TaskCreateModel createModel)
         {
+            var model = createModel.Adapt<TaskEntity>();
+            model.Id = Guid.NewGuid();
+            model.СreatorId = AuthUser.Id;
+            model.CreationData = DateTime.UtcNow;
+
+
             var modelToCreate = await _taskService.CreateAsync(model);
             return CreatedAtAction(nameof(GetById), new { id = modelToCreate.Id }, modelToCreate);
         }

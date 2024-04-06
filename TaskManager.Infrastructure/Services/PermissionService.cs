@@ -18,13 +18,13 @@ public class PermissionService(TaskManagerDbContext context): IPermissionService
         switch (allowedProject)
         {
             case AllowedProject.Edit:
-                isPermission = await projects.AnyAsync(p => p.Role!.AllowedEditProject);
+                isPermission = await projects.AnyAsync(p => p.Role!.ProjectEdit);
                 break;
             case AllowedProject.Delete:
-                isPermission = await projects.AnyAsync(p => p.Role!.AllowedDeleteProject);
+                isPermission = await projects.AnyAsync(p => p.Role!.ProjectDelete);
                 break;
             case AllowedProject.AddUsers:
-                isPermission = await projects.AnyAsync(p => p.Role!.AllowedAddUsersProject);
+                isPermission = await projects.AnyAsync(p => p.Role!.ProjectAddUsers);
                 break;
             default:
                 break;

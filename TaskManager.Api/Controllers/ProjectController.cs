@@ -3,13 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 using TaskManager.Api.Controllers.Abstracted;
 using TaskManager.Core.Contracts.Services;
 using TaskManager.Core.Models.Project;
-using TaskManager.Infrastructure.Services;
 
 namespace TaskManager.Api.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route("api/Project")]
+    [Route("api/Projects")]
     public class ProjectController(IProjectService projectService, IPermissionService permissionService, IUserService userService) : BaseController
     {
         private readonly IProjectService _projectService = projectService;
@@ -69,7 +68,7 @@ namespace TaskManager.Api.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Edit(Guid id, ProjectUpdateModel model)
         {
-            await _permissionService.Project(AuthUser.Id ,id,Core.Enums.AllowedProject.Edit);
+            await _permissionService.Project(AuthUser.Id, id, Core.Enums.AllowedProject.Edit);
             await _projectService.UpdateAsync(id, model);
             return Ok();
         }
@@ -83,6 +82,7 @@ namespace TaskManager.Api.Controllers
             return Ok();
         }
 
+
         [HttpGet("{id}/Users")]
         public async Task<IActionResult> GetUsers(Guid id)
         {
@@ -90,7 +90,8 @@ namespace TaskManager.Api.Controllers
             return Ok(response);
         }
 
-        [HttpGet("{id}/board")]
+
+        [HttpGet("{id}/Boards")]
         public async Task<IActionResult> GetBoard(Guid id)
         {
             var response = await _projectService.GetByIdBoard(id);
