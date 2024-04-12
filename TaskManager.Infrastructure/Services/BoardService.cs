@@ -47,9 +47,9 @@ public class BoardService(TaskManagerDbContext context) : IBoardService
         return board;
     }
 
-    public Task<List<TaskModel>> GetByIdTaskAsync(Guid id)
+    public IAsyncEnumerable<BoardModel> GetByProjectIdAsync(Guid id)
     {
-        return _context.Tasks.Where(t => t.BoardId == id).ProjectToType<TaskModel>().ToListAsync();
+        return _context.Boards.Where(b => b.ProjectId.Equals(id)).ProjectToType<BoardModel>().AsAsyncEnumerable();
     }
 
     public async Task UpdateAsync(Guid id, BoardUpdateModel model)

@@ -72,5 +72,11 @@ namespace TaskManager.Api.Controllers
             await _roleService.UpdateAsync(id, model);
             return Ok();
         }
+
+        [HttpGet("/api/projects/{id}/roles")]
+        public IAsyncEnumerable<RoleModel> GetRoles(Guid id)
+        {
+            return _roleService.GetByProjectIdAsync(id);
+        }
     }
 }

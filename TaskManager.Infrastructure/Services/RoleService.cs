@@ -44,6 +44,9 @@ public class RoleService(TaskManagerDbContext context) : IRoleService
         return role;
     }
 
+    public IAsyncEnumerable<RoleModel> GetByProjectIdAsync(Guid id)
+        => _context.Roles.AsNoTracking().Where(p => p.ProjectId == id).ProjectToType<RoleModel>().AsAsyncEnumerable();
+
     public async Task UpdateAsync(Guid id, RoleUpdateModel model)
     {
         var taskRole = _context.Roles.AnyAsync(r => r.Id == id);

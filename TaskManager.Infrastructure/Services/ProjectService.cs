@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using TaskManager.Core.Contracts.Services;
 using TaskManager.Core.Entities;
 using TaskManager.Core.Exceptions;
-using TaskManager.Core.Models;
 using TaskManager.Core.Models.Project;
 using TaskManager.Infrastructure.Persistence;
 
@@ -23,29 +22,6 @@ namespace TaskManager.Infrastructure.Services
 
             if (count < 1)
                 throw new NotFoundException("Invalid project uuid");
-        }
-
-        public async Task AddUsers(Guid projectId, Guid roleId, params Guid[] usersId)
-        {
-            var taskProject = _context.Projects.FindAsync(projectId);
-
-            var participants = new ProjectParticipant[usersId.Length];
-            for (int i = 0; i < usersId.Length; i++)
-            {
-                var participant = new ProjectParticipant()
-                {
-                    UserId = usersId[i],
-                    ProjectId = projectId,
-                    RoleId = roleId,
-                };
-                participants[i] = participant;
-            }
-            var project = await taskProject;
-
-            if (project is null)
-                throw new NotFoundException("Invalid project uuid");
-            project.Participants.AddRange(participants);
-            await _context.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<ProjectModel>> GetAllAsync()
@@ -111,11 +87,6 @@ namespace TaskManager.Infrastructure.Services
 
             if (count < 1)
                 throw new NotFoundException("Invalid project uuid");
-        }
-
-        public Task<List<BoardModel>> GetByIdBoard(Guid id)
-        {
-            return _context.Boards.Where(b=>b.ProjectId == id).ProjectToType<BoardModel>().ToListAsync();
         }
     }
 }

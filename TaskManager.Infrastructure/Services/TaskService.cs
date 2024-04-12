@@ -14,7 +14,7 @@ namespace TaskManager.Infrastructure.Services
 
         public async Task<TaskModel> CreateAsync(TaskEntity model)
         {
-            var isBoard = await _context.Boards.AnyAsync(b=>b.Id == model.BoardId);
+            var isBoard = await _context.Boards.AnyAsync(b => b.Id == model.BoardId);
 
             if (!isBoard)
                 throw new BadRequestException("Invalid board uuid");
@@ -33,12 +33,13 @@ namespace TaskManager.Infrastructure.Services
                 throw new BadRequestException("Invalid board uuid");
         }
 
-        public async Task<List<TaskModel>> GetAllAsync()
+        public IAsyncEnumerable<TaskModel> GetAllAsync()
         {
-            var project = await _context.Tasks.AsNoTracking().ProjectToType<TaskModel>().ToListAsync();
-
-            return project;
+            return _context.Tasks.AsNoTracking().ProjectToType<TaskModel>().AsAsyncEnumerable();
         }
+
+        public IAsyncEnumerable<TaskModel> GetByBoardIdAsync(Guid id)
+            => _context.Tasks.Where(t => t.BoardId == id).ProjectToType<TaskModel>().AsAsyncEnumerable();
 
         public async Task<TaskModel> GetByIdAsync(Guid id)
         {

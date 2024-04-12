@@ -12,6 +12,29 @@ namespace TaskManager.Infrastructure.Services
     {
         private readonly TaskManagerDbContext _context = context;
 
+        public async Task AddUsersInProject(Guid projectId, Guid roleId, Guid[] usersId)
+        {
+            var taskProject = _context.Projects.FindAsync(projectId);
+
+            var participants = new ProjectParticipant[usersId.Length];
+            for (int i = 0; i < usersId.Length; i++)
+            {
+                var participant = new ProjectParticipant()
+                {
+                    UserId = usersId[i],
+                    ProjectId = projectId,
+                    RoleId = roleId,
+                };
+                participants[i] = participant;
+            }
+            var project = await taskProject;
+
+            if (project is null)
+                throw new NotFoundException("Invalid project uuid");
+            project.Participants.AddRange(participants);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<ParticipantModel> CreateAsync(ParticipantCreateModel model)
         {
             await ValidateDetails(model.ProjectId, model.UserId, model.RoleId);
@@ -25,6 +48,15 @@ namespace TaskManager.Infrastructure.Services
 
         public Task DeleteAsync(Guid id)
             => _context.Participant.Where(p => p.Id == id).ExecuteDeleteAsync();
+
+        public async Task DeleteParticipantInProjectAsync(Guid projectId, Guid userId)
+        {
+            var count = await _context.Participant
+                .Where(p => p.ProjectId == projectId && p.UserId == userId)
+                .ExecuteDeleteAsync();
+            if (count < 1)
+                throw new NotFoundException("Invalid user uuid");
+        }
 
         public Task<List<ParticipantModel>> GetAllAsync()
         {

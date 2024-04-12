@@ -7,7 +7,8 @@ namespace TaskManager.Core.Contracts.Services
     {
         Task<TaskModel> CreateAsync(TaskEntity model);
         Task DeleteAsync(Guid id);
-        Task<List<TaskModel>> GetAllAsync();
+        IAsyncEnumerable<TaskModel> GetAllAsync();
+        IAsyncEnumerable<TaskModel> GetByBoardIdAsync(Guid id);
         Task<TaskModel> GetByIdAsync(Guid id);
         Task UpdateAsync(Guid id, TaskUpdateModel model);
     }

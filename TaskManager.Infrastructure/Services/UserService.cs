@@ -76,14 +76,14 @@ namespace TaskManager.Infrastructure.Services
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<UserRoleModel>> GetByProjectId(Guid projectId)
+        public IAsyncEnumerable<UserRoleModel> GetByProjectId(Guid projectId)
         {
-            var userRoles = await _context.Participant
+            var userRoles = _context.Participant
                 .Where(p => p.ProjectId == projectId)
                 .Include(p => p.User)
                 .Include(p => p.Role)
                 .ProjectToType<UserRoleModel>()
-                .ToListAsync();
+                .AsAsyncEnumerable();
             return userRoles;
         }
 

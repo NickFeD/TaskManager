@@ -53,10 +53,9 @@ namespace TaskManager.Api.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public IAsyncEnumerable<TaskModel> GetAll()
         {
-            var response = await _taskService.GetAllAsync();
-            return Ok(response);
+            return _taskService.GetAllAsync();
         }
 
         /// <summary>
@@ -82,6 +81,12 @@ namespace TaskManager.Api.Controllers
         {
             await _taskService.UpdateAsync(id, updateModel);
             return Ok();
+        }
+
+        [HttpGet("/api/board/{id}/task")]
+        public IAsyncEnumerable<TaskModel> GetByIdTask(Guid id)
+        {
+            return _taskService.GetByBoardIdAsync(id);
         }
     }
 }

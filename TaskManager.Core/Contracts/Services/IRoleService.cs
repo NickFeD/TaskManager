@@ -8,6 +8,7 @@ namespace TaskManager.Core.Contracts.Services
         Task DeleteAsync(Guid id);
         Task<List<RoleModel>> GetAllAsync();
         Task<RoleModel> GetByIdAsync(Guid id);
+        IAsyncEnumerable<RoleModel> GetByProjectIdAsync(Guid id);
         Task UpdateAsync(Guid id, RoleUpdateModel model);
     }
 }

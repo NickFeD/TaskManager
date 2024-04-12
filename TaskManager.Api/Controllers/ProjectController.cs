@@ -9,11 +9,10 @@ namespace TaskManager.Api.Controllers
     [Authorize]
     [ApiController]
     [Route("api/Projects")]
-    public class ProjectController(IProjectService projectService, IPermissionService permissionService, IUserService userService) : BaseController
+    public class ProjectController(IProjectService projectService, IPermissionService permissionService) : BaseController
     {
         private readonly IProjectService _projectService = projectService;
         private readonly IPermissionService _permissionService = permissionService;
-        private readonly IUserService _userService = userService;
 
         /// <summary>
         /// Create a project
@@ -43,6 +42,7 @@ namespace TaskManager.Api.Controllers
         [HttpDelete]
         public async Task<IActionResult> Delete(Guid id)
         {
+            await _permissionService.Project(AuthUser.Id, id, Core.Enums.AllowedProject.Delete);
             await _projectService.DeleteAsync(id);
             return Ok();
         }
@@ -71,31 +71,6 @@ namespace TaskManager.Api.Controllers
             await _permissionService.Project(AuthUser.Id, id, Core.Enums.AllowedProject.Edit);
             await _projectService.UpdateAsync(id, model);
             return Ok();
-        }
-
-
-        [HttpPost("{id}/Users")]
-        public async Task<IActionResult> AddUsers(Guid id, ProjectAddUsers addUsers)
-        {
-            await _permissionService.Project(AuthUser.Id, id, Core.Enums.AllowedProject.Edit);
-            await _projectService.AddUsers(id, addUsers.RoleId, addUsers.UserId);
-            return Ok();
-        }
-
-
-        [HttpGet("{id}/Users")]
-        public async Task<IActionResult> GetUsers(Guid id)
-        {
-            var response = await _userService.GetByProjectId(id);
-            return Ok(response);
-        }
-
-
-        [HttpGet("{id}/Boards")]
-        public async Task<IActionResult> GetBoard(Guid id)
-        {
-            var response = await _projectService.GetByIdBoard(id);
-            return Ok(response);
         }
     }
 }

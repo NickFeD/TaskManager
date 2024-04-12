@@ -63,18 +63,6 @@ namespace TaskManager.Api.Controllers
             return Ok(desk);
         }
 
-        /// <summary>
-        /// Get a desk by id
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        [HttpGet("{id}/task")]
-        [ProducesResponseType(typeof(BoardModel), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetByIdTask(Guid id)
-        {
-            var task = await _boardService.GetByIdTaskAsync(id);
-            return Ok(task);
-        }
 
         /// <summary>
         /// Update the desk
@@ -83,11 +71,18 @@ namespace TaskManager.Api.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPut]
-        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> Update(Guid id, BoardUpdateModel model)
         {
             await _boardService.UpdateAsync(id, model);
             return Ok();
+        }
+
+
+        [HttpGet("/api/Projects/{id}/Boards")]
+        public IAsyncEnumerable<BoardModel> GetBoards(Guid id)
+        {
+            return _boardService.GetByProjectIdAsync(id);
         }
     }
 }
