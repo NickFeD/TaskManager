@@ -4,6 +4,8 @@ namespace TaskManager.Core.Models
 {
     public class TaskModel : CommandModel
     {
+        public TaskStatus Status { get; set; }
+        public int Priority { get; set; }
         public DateTime StartDate { get; init; }
         public DateTime EndDate { get; init; }
         //public byte[] File { get; init; }

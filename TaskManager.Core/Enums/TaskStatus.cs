@@ -1,8 +1,9 @@
 ﻿namespace TaskManager.Core.Enums;
 
-public enum ProjectStatus
+public enum TaskStatus
 {
     InProgress,
     Suspended,
     Completed,
+
 }

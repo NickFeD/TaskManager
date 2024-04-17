@@ -39,7 +39,7 @@ namespace TaskManager.Api.Controllers
         [ProducesDefaultResponseType]
         public async Task<IActionResult> DeleteUsers(Guid projectId, Guid userId)
         {
-            await _permissionService.Project(AuthUser.Id, projectId, Core.Enums.AllowedProject.Delete);
+            await _permissionService.Project(AuthUser.Id, projectId, Core.Enums.AllowedProject.DeleteUsers);
             await _participantService.DeleteParticipantInProjectAsync(projectId, userId);
             return NoContent();
         }

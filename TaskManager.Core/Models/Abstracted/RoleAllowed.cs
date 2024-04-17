@@ -10,6 +10,9 @@
         public bool BoardEdit { get; set; } = false;
         public bool BoardDelete { get; set; } = false;
         public bool BoardAddTasks { get; set; } = false;
+        public bool TaskAdd { get; set; } = false;
+        public bool TaskEdit { get; set; } = false;
+        public bool TaskDelete { get; set; } = false;
         public bool RoleAdd { get; set; } = false;
         public bool RoleEdit { get; set; } = false;
         public bool RoleDelete { get; set; } = false;

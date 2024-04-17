@@ -7,4 +7,6 @@ public class TaskCreateModel
     public DateTime StartDate { get; init; }
     public DateTime EndDate { get; init; }
     public Guid BoardId { get; init; }
+    public TaskStatus Status { get; set; }
+    public int Priority { get; set; }
 }

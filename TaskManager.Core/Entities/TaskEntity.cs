@@ -7,10 +7,11 @@ public class TaskEntity : Entity<Guid>
 {
     public required string Name { get; set; }
     public string? Description { get; set; }
+    public TaskStatus Status { get; set; }
+    public int Priority { get; set; }
     public DateTime CreationData { get; set; } = DateTime.Now;
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
-
     public Guid? ExecutorId { get; set; }
 
     [ForeignKey(nameof(ExecutorId))]

@@ -1,16 +1,19 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TaskManager.Api.Controllers.Abstracted;
 using TaskManager.Core.Contracts.Services;
 using TaskManager.Core.Models;
+using TaskManager.Infrastructure.Services;
 
 namespace TaskManager.Api.Controllers
 {
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class BoardController(IBoardService boardService) : ControllerBase //ICRUDController<BoardModel, Guid>
+    public class BoardController(IBoardService boardService, IPermissionService permissionService) : BaseController //ICRUDController<BoardModel, Guid>
     {
         private readonly IBoardService _boardService = boardService;
+        private readonly IPermissionService _permissionService = permissionService;
 
         /// <summary>
         /// Create a desk
@@ -20,8 +23,8 @@ namespace TaskManager.Api.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(BoardModel), StatusCodes.Status201Created)]
         public async Task<IActionResult> Create(BoardCreateModel model)
-        {
-
+        { 
+            await _permissionService.Board(AuthUser.Id,model.ProjectId,Core.Enums.AllowedBoard.Add);
             var modelToCreate = await _boardService.CreateAsync(model);
             return CreatedAtAction(nameof(GetById), new { id = modelToCreate.Id }, modelToCreate);
         }
@@ -35,6 +38,7 @@ namespace TaskManager.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> Delete(Guid id)
         {
+            await _permissionService.Board(AuthUser.Id, id, Core.Enums.AllowedBoard.Delete);
             await _boardService.DeleteAsync(id);
             return Ok();
         }

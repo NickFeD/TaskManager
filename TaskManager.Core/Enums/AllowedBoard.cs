@@ -1,9 +1,9 @@
 ﻿namespace TaskManager.Core.Enums;
 
-public enum AllowedProject
+public enum AllowedBoard
 {
+    Add,
     Edit,
     Delete,
-    AddUsers,
-    DeleteUsers,
+    AddTask,
 }
