@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using TaskManager.Api.Controllers.Abstracted;
 using TaskManager.Core.Contracts.Services;
 using TaskManager.Core.Models;
-using TaskManager.Infrastructure.Services;
 
 namespace TaskManager.Api.Controllers
 {
@@ -23,8 +22,8 @@ namespace TaskManager.Api.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(BoardModel), StatusCodes.Status201Created)]
         public async Task<IActionResult> Create(BoardCreateModel model)
-        { 
-            await _permissionService.Board(AuthUser.Id,model.ProjectId,Core.Enums.AllowedBoard.Add);
+        {
+            await _permissionService.Board(AuthUser.Id, model.ProjectId, Core.Enums.AllowedBoard.Add);
             var modelToCreate = await _boardService.CreateAsync(model);
             return CreatedAtAction(nameof(GetById), new { id = modelToCreate.Id }, modelToCreate);
         }

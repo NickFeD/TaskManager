@@ -46,7 +46,7 @@ public class PermissionService(TaskManagerDbContext context) : IPermissionServic
         var projects = _context.Boards
             .Where(b => b.Id == boardId)
             .Select(p => p.Project)
-            .Select(p =>p!.Participants.SingleOrDefault(p=>p.UserId == userId)) ?? throw new BadRequestException("Invalid project uuid");
+            .Select(p => p!.Participants.SingleOrDefault(p => p.UserId == userId)) ?? throw new BadRequestException("Invalid project uuid");
 
         var isPermission = false;
         switch (allowedBoard)
@@ -76,7 +76,7 @@ public class PermissionService(TaskManagerDbContext context) : IPermissionServic
             .Where(b => b.Id == taskId)
             .Select(p => p.Board)
             .Select(p => p.Project)
-            .Select(p => p.Participants.SingleOrDefault(p => p.UserId == userId))?? throw new BadRequestException("Invalid project uuid");
+            .Select(p => p.Participants.SingleOrDefault(p => p.UserId == userId)) ?? throw new BadRequestException("Invalid project uuid");
         var isPermission = false;
         switch (allowedTask)
         {
